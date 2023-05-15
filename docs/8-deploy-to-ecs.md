@@ -43,7 +43,9 @@ In that left-hand panel, delete all the JSON already there and in its place, put
 }
 ```
 
-What is all that? Well this will be the new policy for the ECS task executiion. The first statement is the content of `AmazonECSTaskExecutionRolePolicy`. That is what it would give itself if we left it alone. However since we are using SSM for our secrets, [as documented](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/secrets-envvar-ssm-paramstore.html) we need to give that role additional access. So the second statement should let it fetch the secrets too.
+What is all that? Well ... this will be the new policy for the ECS task execution. The first statement is the content of `AmazonECSTaskExecutionRolePolicy`. That is what it would give itself if we left it alone. However since we are using SSM for our secrets, [as it documents](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/secrets-envvar-ssm-paramstore.html) we need to manually give that role additional access. So the second statement should let it fetch the secrets too.
+
+**Note:** If you prefer you can restrict the parameters it has access to (rather than use "\*"). If you recall we named our secrets in the Parameter Store using a path prefix for that very reason.
 
 Click the blue "Next" button.
 
@@ -51,7 +53,7 @@ Give it the name `ecs_task_execution_policy` (or something else you can identify
 
 Click "Create policy". That should only take a second.
 
-Now you need to create a role which has that policy. So in the left-hand menu, click on "Roles". Click on the blue button to "Create role".
+Now you need to create an IAM role which that policy will be attached to. So in the left-hand menu, click on "Roles". Click on the blue button to "Create role".
 
 For the trusted entity, that needs to be ECS, so in the dropdown menu start typing "Elastic ..." and you should see that option available. We want the "Elastic Container Service Task" as shown here, as that will assume this role:
 
@@ -61,15 +63,13 @@ On the next screen, check the box next to the policy you just created. For examp
 
 Scroll down and click "Next".
 
-Give the role a name. It makes sense to use `ecs_task_execution_role` (or something along those lines!).
+Give the role a name. It makes sense to use `ecs_task_execution_role` (or something along those lines) so it is obvious what it is used for.
 
-Click the blue "Create role" button and that should be created in a few seconds.
-
-That's now available for us to use later.
+Click the blue "Create role" button and that should be created in a few seconds. That's now available for us to use later on.
 
 ## ECS cluster
 
-We now have an image to deploy (in ECR) and a database to connect to (in RDS). We need a container. That is run in ECS.
+Now that we have an image to deploy within it (in ECR), a database for it to connect to (in RDS) and secrets for it to access (in Parameter Store) we need a container.
 
 Search for "ECS" and click on the link that appears:
 
@@ -79,7 +79,7 @@ You will likely see the welcome screen. Click "Get started":
 
 ![Welcome to AWS ECS](img/aws_ecs_welcome.jpeg)
 
-You currently have no clusters so click on the button to "Create cluster". There is no cost for the cluster itself, only the resources within it. The cluster is a group of one or more containers.
+Click the button to "Create cluster". There is no cost for the cluster itself, only the resources within it.
 
 First, give it a name:
 
@@ -93,7 +93,7 @@ Scroll down and you will see the _Infrastructure_ panel.
 
 The default is to have Fargate provide the capacity. That is a _serverless_ approch, avoiding the need to manage instances (but costing more as a result). For now we will leave that as the sole provider and so leave the other two boxes unchecked.
 
-Monitoring is optional but since this is a demonstration we want to see a bit more about what ishappening. We'll expand that panel and enable it:
+Monitoring is optional but for now we want to see a bit more about what is happening. So we'll expand that panel and enable it:
 
 ![ECS cluster infrastructure](img/aws_ecs_create_cluster_infrastructure.jpeg)
 
@@ -101,23 +101,27 @@ Click "Create" and you should see a panel saying that cluster creation is in pro
 
 ![ECS cluster created](img/aws_ecs_cluster_created.jpeg)
 
-A task defintion specifies _what_ to run. The image. What CPU is needed. What environment variables it needs. We need one of those.
+It has been created, but is currently empty.
+
+Next we need a task defintion. That specifies _what_ to run (the image, the environment variables, and so on).
 
 ## Task (definition)
 
-So before we can create a service (or indeed a task, though we won't be using one here) we need to create a task definition for it to run. Click on "Task definitions" and then on the create button:
+Click on "Task definitions" and then on the "create new task definition" button:
 
 ![ECS task definitions](img/aws_ecs_task_definitions.jpeg)
 
-Start by giving the task a name:
+Start by giving it a name:
 
 ![ECS task name](img/aws_ecs_task_1.jpeg)
 
-Next you need to specify the image that should be run in the container (of course there must be at least one, hence it labelling the first container as being essential). Recall that is the ECR URL, followed by the tag, of the image you pushed earlier. Our app uses port 4000 and so we'll specify that too:
+Next you need to specify the image that should be run in the container (of course there must be at least one, hence it labelling the first container as being essential). Recall that is the full ECR URL followed by the tag of the image you pushed to it earlier.
+
+ECR _is_ a private registry however since it is within AWS you do not need to select that option or provide extra credentials.
+
+The Live Beats app uses port 4000 by default and so we'll specify that here too.
 
 ![ECS task container](img/aws_ecs_task_2.jpeg)
-
-ECR is a private registry, however since it is within AWS you do not need to select that option or provide extra credentials.
 
 Scroll down a bit further and you are asked for the environment variables.
 
