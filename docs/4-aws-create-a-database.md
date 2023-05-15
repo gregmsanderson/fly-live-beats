@@ -38,13 +38,15 @@ Next choose the initial disk size. The default is the smallest value: 20GB. Hand
 
 Next, the connectivity. It asks if you want to set up a connection to an existing EC2 instance. We don't have one, so we'll skip that.
 
-For the network type, we'll leave the default as IPv4. If you recall, the default VPC created by AWS does not have IPv6 enabled. We could do that (you may have done so already, for dual-stack) however it is not needed here.
+For the network type, we'll leave the default as IPv4. If you recall, the default VPC created by AWS does not have IPv6 enabled.
 
-Next, the VPC. We'll leave the default one selected. We'll be using that later when it comes to setting up the ECS cluster so that our container(s) can connect to this database. We'll use the default subnet group too.
+Next, the VPC. We'll leave the default one selected. We'll be using that same one later as we will need to connect our compute service to this database. We'll use the default subnet group too.
 
-Next, whether to allow public access. Note that if you were to select yes (it's better not to) this does not open it up to the whole world. That would be _very_ bad. Instead it determines whether a public IP is added and so whether it is _possible_ to connect it from outside your VPC. For example your local PC. Who can access it is controlled within the security group, which acts as its firewall (in the next panel down). In the security group you can allow access from "the public" to only your IP, for example.
+Next, whether to allow public access.
 
-We recommend choosing the option to create a new security group rather than use the default one, as then (from its name) it is clear what it is being used for:
+Note that this does not open it up to the whole world. That would be _very_ bad. Instead it determines whether a public IP is added, and so whether it is _possible_ to connect it from outside your VPC. For example from your local PC. Who can access it is controlled within the security group. That acts as its firewall (in the next panel down). In the security group you can allow access from "the public" to only your IP, for example. Ideally you should choose "no" however here we will (initially) choose "yes' as we will demonstrate connecting to the database from your local machine later on.
+
+Choose the option to create a new security group rather than use the default one, as then (from its name) it is clear what it is being used for. It makes it much easier to connect other applications to it as you can then select the RDS security group rather than have to remember what the one called "default" is actually being used by:
 
 ![RDS security group](img/aws_rds_security_group.jpeg)
 
@@ -66,22 +68,24 @@ If you click on its name you should see all of its details. There are tabs for m
 
 Let's take a look at the first tab. Its "Connectivity & security". If you scroll down, that shows its endpoint and port (the default is 5432).
 
-If you scroll down a bit further, _if_ you said "Yes" when asked whether to allow public access using the wizard, AWS should have created a new security group and added your current IP to that automatically. You should see in the "Security group rules" panel two rules, where the top row, the "CIDR/IP - Inbound", has your current IP as being allowed. For example "1.2.3.4/32". That means you will be able to access it from your local machine. You could either use your favourite database UI/editor or the command line. Since we have PostgreSQL installed we'll use the command line, using `psql`.
+## Connect to the database
+
+If you said "Yes" when asked whether to allow public access using the wizard, AWS should have created a new security group and added your current IP to that automatically. You should see in the "Security group rules" panel two rules. The top row, the "CIDR/IP - Inbound", should have access from your current IP as allowed. For example "1.2.3.4/32". That means you will be able to access it from your local machine. You could either use your favourite database UI/editor or use the command line. Since we have PostgreSQL installed already we'll use the command line `psql`:
 
 ```sh
 $ psql --version
 psql (PostgreSQL) 14.2
 ```
 
-The command should be: `psql -d postgres -U username -H hostname`. So try that using your choice of username (maybe you left it as `postgres`) and your RDS endpoint as the hostname:
+The command is: `psql -d postgres -U username -H hostname`. Try that using _your_ choice of username (maybe you left it as `postgres`) and your RDS endpoint as the hostname:
 
 ```sh
-$ psql -h your.endpoint.rds.amazonaws.com -U postgres -d postgres
+$ psql -h your.endpoint.here.rds.amazonaws.com -U postgres -d postgres
 ```
 
-It should prompt you for your password. Enter that, and you should be connected.
+It should prompt you for your password. Enter that and you should be connected.
 
-If not, make sure:
+If _not_ make sure:
 
 - Your database is set to allow public access
 - The endpoint, username and password are all correct
@@ -101,7 +105,7 @@ postgres=> \l
 
 Great! It works.
 
-Now our Live Beats app _could_ also use the `postgres` user. We know that works. However that is a super-user and it's probably better if we create a new user, just for the app. We can then avoid using the `postgres` password at all. So while here let's create a new user, give them a password, and then create a new database ready for our app to use (replace these values below with whatever database name, username and password _you_ want to use. Make a note of them as you'll need to provide them to the app later):
+Now our Live Beats app _could_ also use that `postgres` user. However that is a super-user and it's probably better if we create a new user, just for the app. We can then avoid using the `postgres` password at all. Let's create a new user, give them a password, and then create a new database ready for our app to use (replace these values below with whatever database name, username and password _you_ want to use). Make a note of them as you'll need to provide them to the app later:
 
 ```sh
 postgres=# create database fly_live_beats_db;
@@ -109,6 +113,10 @@ postgres=# create user fly_live_beats with encrypted password 'yourchoiceofpassw
 postgres=# grant all privileges on database fly_live_beats_db to fly_live_beats;
 ```
 
-Done! Type `\q` to quit and return to your terminal. The database is now ready for our app to connect to.
+Done!
 
-Our database is now set up. We now need to store the `DATABASE_URL` connection string. So we will proceed to [create a secret](/docs/5-aws-create-secrets.md).
+Type `\q` to quit and return to your terminal. The database is now ready for our app to connect to.
+
+You shouldn't need public access enabled and so you can edit that to be "no" if you like.
+
+Next, we know our app uses values that need to be kept seecret. Let's proceed to [create the secrets](/docs/5-aws-create-secrets.md).
