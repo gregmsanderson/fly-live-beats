@@ -1,0 +1,46 @@
+# fly.toml app configuration file generated for fly-live-beats on 2023-05-13T17:35:33+01:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = "fly-live-beats"
+primary_region = "lhr"
+kill_signal = "SIGTERM"
+kill_timeout = "5s"
+
+[experimental]
+  auto_rollback = true
+
+[deploy]
+  release_command = "/app/bin/migrate"
+
+[env]
+  PHX_HOST = "fly-live-beats.fly.dev"
+  PORT = "8080"
+
+[[mounts]]
+  source = "data"
+  destination = "/app/uploads"
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 8080
+  processes = ["app"]
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+  [services.concurrency]
+    type = "connections"
+    hard_limit = 1000
+    soft_limit = 1000
+
+  [[services.tcp_checks]]
+    interval = "15s"
+    timeout = "2s"
+    grace_period = "20s"
+    restart_limit = 0
