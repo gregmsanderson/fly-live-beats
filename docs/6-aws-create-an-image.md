@@ -41,9 +41,7 @@ If you click thaat button in your console, you should see _your_ commands, prefi
 
 Let's take those four commands in turn (of course you will run the ones shown to you, using your registry, repository name and region):
 
-1. First you need to get an authentication token from ECR. That's the first part of this command. That token is then be piped directly to the Docker client. That will allow it to push images to your registry.
-
-**Note:** You will see we have added a `--profile example` flag to their command. That's because we use the AWS CLI for multiple AWS accounts and need to specify which one to use. If you only have credentials for one AWS account, that is the default one and so your command would not need to specify that.
+1. First you need to get an authentication token from ECR. That's the first part of this command. That token is then be piped directly to the Docker client. That will allow it to push images to your registry. You will see we have added a `--profile example` flag to their command. That's because _we_ use the AWS CLI for multiple AWS accounts and need to specify which one to use. If you only have credentials for one AWS account, that is the default one and so your command would not need to specify that.
 
 ```sh
 $ aws ecr get-login-password --region eu-west-2 --profile example  | docker login --username AWS --password-stdin 12345678.dkr.ecr.eu-west-2.amazonaws.com
@@ -51,7 +49,7 @@ $ aws ecr get-login-password --region eu-west-2 --profile example  | docker logi
 
 You should see "Login Succeeded".
 
-2. Next we need to build an imaage. If you tried running a local container earlier in the guide, you may already have one. But let's ensure that we have a new one (tagged latest).
+2. Next we need to build an image. If you tried running a local container earlier in the guide, you may already have one. But let's ensure that we have a new one (tagged latest).
 
 **Note:** The original Live Beats app includes some code specific to deployment on Fly.io. If you have not made the changes to support deploying it elsewhere, please do so before building the image.
 
@@ -89,4 +87,4 @@ If you still have the AWS console open, if you now check your repository (you ma
 
 Now the image is ready to be deployed.
 
-We now need to [decide which compute service](/docs/7-aws-which-compute-service.md) to use.
+We now need to [decide which AWS compute service](/docs/7-aws-which-compute-service.md) to use.
