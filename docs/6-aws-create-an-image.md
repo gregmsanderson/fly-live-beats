@@ -31,11 +31,11 @@ $ docker --version
 Docker version 23.0.1-rd, build 393499b
 ```
 
-We need to get the commands to do that. Click on the name of the repository in ECR. We want the commands to push an image to it:
+We need to get the commands to build, tag and push the image to ECR. Click on the name of the repository. We want these commands:
 
 ![ECR push image](img/aws_ecr_click_on_it.jpeg)
 
-If you click thaat button in your console, you should see _your_ commands, prefilled with your repository URL. They should look something like this:
+If you click that button in your console, you should see _your_ commands (prefilled with your repository URL). They will look something like this:
 
 ![ECR push commands](img/aws_ecr_get_push_commands.jpeg)
 
@@ -51,7 +51,7 @@ You should see "Login Succeeded".
 
 2. Next we need to build an image. If you tried running a local container earlier in the guide, you may already have one. But let's ensure that we have a new one (tagged latest).
 
-**Note:** The original Live Beats app includes some code specific to deployment on Fly.io. If you have not made the changes to support deploying it elsewhere, please do so before building the image.
+**Note:** The original Live Beats app includes some code that is specific to running on Fly.io. If you have not made the changes to support deploying it elsewhere, please do so before building the image. If you search the app's code for "AWS" we should have commented where we need to make a change (for example where we work out its IP).
 
 ```sh
 $ docker build -t fly-live-beats .
@@ -66,8 +66,6 @@ That build should proceed. It may take a few minutes:
 ...
 => => naming to docker.io/library/your-app-name
 ```
-
-Great! It worked.
 
 3. Next we need to tag it, ready to push to the ECR. Replace `your-app-name` and your registry URL:
 
@@ -87,4 +85,4 @@ If you still have the AWS console open, if you now check your repository (you ma
 
 Now the image is ready to be deployed.
 
-We now need to [decide which AWS compute service](/docs/7-aws-which-compute-service.md) to use.
+We need to [decide which AWS compute service](/docs/7-aws-which-compute-service.md) to use to run the container.

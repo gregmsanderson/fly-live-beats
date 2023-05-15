@@ -86,7 +86,9 @@ The database app is now ready to use. We do not need to configure any networking
 
 ### Preparation
 
-If you followed the previous steps, we needed to modify the original [Live Beats app](https://github.com/fly-apps/live_beats) to edit parts that were specific to Fly.io in order to try running it locally, in a container. Since we _are_ now deploying to Fly those changes are not necessary and so can be reverted. For example:
+If you followed the previous steps, we needed to modify the original [Live Beats app](https://github.com/fly-apps/live_beats) to edit parts that were specific to Fly.io in order to try running it locally, in a container. Since we _are_ now deploying to Fly those changes are not necessary and so must all be reverted. We recommend using the original Live Beats app code however if you are using the one in _this_ repo (with its various changes for running on local, Fly and AWS), look for mentions of "Fly.io" in the code.
+
+For example:
 
 1. In the `Dockerfile` we commented out using IPv6, so uncomment that back to how it was:
 
@@ -113,9 +115,9 @@ app_name =
     raise "FLY_APP_NAME not available"
 ```
 
-Next, the `fly.toml` file.
+We also modified `/config/runtime.exs` to work using HTTP, and IPv4. That was necessary because on AWS, the default VPC does not support IPv6, and the default load balancer only supports listening on port 80 (HTTP). Those changes need to be reverted, as Fly does support IPv6 and does provide HTTPS by default.
 
-If you have a Phoenix LiveView app that has not previously been deployed to Fly, you won't have a `fly.toml` file. However this app has and so we need to make some changes to that file. Update the `app` value to be one of your choice since it needs to be globally unique. The `PHX_HOST` value needs to include that name. If you recall from running this app locally, that `PHX_HOST` is set to avoid errors with the WebSocket connection:
+Next, if you have a Phoenix LiveView app that has not previously been deployed to Fly, you won't have a `fly.toml` file. However this app has one and so we need to make some changes to that file. Update the `app` value to be one of your choice since it needs to be globally unique. The `PHX_HOST` value needs to include that name. If you recall from running this app locally, that `PHX_HOST` is set to avoid errors with the WebSocket connection:
 
 ```toml
 app = "your-choice-of-name"
@@ -124,7 +126,7 @@ app = "your-choice-of-name"
   PHX_HOST = "your-choice-of-name.fly.dev"
 ```
 
-You will need to make sure the two environment variables this app expects _are_ set locally. If you have previously tried [running it locally](/docs/1-run-locally.md) then they may well still be:
+Make sure the two environment variables this app expects _are_ set locally. If you have previously tried [running it locally](/docs/1-run-locally.md) then they may well still be:
 
 ```sh
 export LIVE_BEATS_GITHUB_CLIENT_ID="swap-this-for-yours"
