@@ -24,9 +24,14 @@ After a few seconds your repository will be created.
 
 We need to get an image of the app into that remote repository. Like with Fly.io, you can choose whether to build locally or have a remote service (such as GitHub Actions) build the image for you. Building it locally is likely going to be slower (how fast it pushes is of course dependent on your network connection) however it is free.
 
-We'll try building locally.
+We'll try building locally using Docker. If you don't already have [Docker](https://docs.docker.com/engine/install/#installation) installed and running, please add that:
 
-We need to get the commands to do that. Click on the name of the repository. We want the commands to push an image to it:
+```sh
+$ docker --version
+Docker version 23.0.1-rd, build 393499b
+```
+
+We need to get the commands to do that. Click on the name of the repository in ECR. We want the commands to push an image to it:
 
 ![ECR push image](img/aws_ecr_click_on_it.jpeg)
 

@@ -95,7 +95,7 @@ $ aws --version
 aws-cli/2.11.18 Python/3.11.3 Darwin/19.6.0 exe/x86_64 prompt/off
 ```
 
-Next, you will need to be authenticated in order to interact with services in your AWS account. From the AWS console, click on _Security Credntials_:
+Next, you will need to be authenticated in order to interact with services in your AWS account. From the AWS console, click on _Security Credentials_:
 
 ![Users](img/aws_security_credentials_for_add_user.jpeg)
 
@@ -117,7 +117,7 @@ Click the button to proceed.
 
 You should be shown _two_ values: the **Access key** and **Secret access key**. You need both of those values. They will only be shown once. You might find it helpful to click the small square icon that's just next to each of those values to copy them briefly to your clipboard.
 
-As the console makes clear these values should **never** be stored in plain text, or in your code. They should be deleted when no longer needed.
+**Iimportant:** As the console makes clear these values should **never** be stored in plain text, or in your code. They should be deleted when no longer needed.
 
 Once you have noted them, click "Done".
 
@@ -132,24 +132,5 @@ If you use VSCode, AWS [provide an extension](https://docs.aws.amazon.com/toolki
 ![AWS toolkit](img/aws_toolkit_install.jpeg)
 
 However for this guide we will be using the AWS console and AWS CLI.
-
-## Prerequisites
-
-Before proceeding on, this guide requires you to have both [Docker](https://docs.docker.com/engine/install/#installation) installed and running, and the [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html) installed. Even though we'll be using the AWS console to set up our repository and cluster, we need them to push an image from our local machine _to_ that repository.
-
-If you don't already have either one, those links should take you to the relevant page to install them.
-
-You can check which version you have from your terminal:
-
-```sh
-$ docker --version
-Docker version 23.0.1-rd, build 393499b
-$ aws --version
-aws-cli/2.11.18 Python/3.11.3 Darwin/19.6.0 exe/x86_64 prompt/off
-```
-
-This guide needs you to have IAM access to AWS, both to the console and also using that CLI. If you haven't already, please see the prior guide to [creating a new one](/docs/3-aws-create-account.md). In that example we created a new IAM user and gave that IAM user administrator access. You may be provided with access that is more locked down. At a minimum you will likely need access to RDS (for the database), ECR (for the image repository), ECS (for the container) and Systems Manager Parameter Store (for its secrets).
-
-As you proceed through this guide, the CLI or console will reject your request with a forbidden error if your current user/role does not have enough access.
 
 Let's now [create a database](/docs/4-aws-create-a-database.md) in AWS.
