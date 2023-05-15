@@ -43,13 +43,11 @@ Essentially at the lowest level is EC2. They are the virtual machines (otherwise
 ECS lets you run a container. Two services can provide the _capacity_ to run that container: Fargate and EC2:
 
 - ECS tasks run on _Fargate_ is the default option. It's now pre-selected for new ECS clusters. That is the "serverless" approach. It provides more abstraction. You only pay when the task is running. But when it _is_ running, that compute costs more.
-- ECS tasks can instead run on _EC2_. Using EC2 to provide the capacity lets you pick from a much larger number of instances. It gives you greater control. Plus its cheaper. However it is more complex to manage as you are then responsible for provisioning EC2 instances and have to ensure you have _sufficient_ capacity for your container(s).
+- ECS tasks can instead run on _EC2_. Using EC2 to provide the capacity lets you pick from a much larger number of instances. It gives you greater control. Plus it's cheaper. However it is more complex to manage as you are then responsible for provisioning EC2 instances and have to ensure you have _sufficient_ capacity for your container(s).
 
-:confused:
+Both sound complicated. Ideally we'd like a service which (like Fly.io) can take _in_ a `Dockerfile` and _return_ a load-balanced TLS endpoint.
 
-Ideally we'd like a service which (like Fly.io) can take _in_ a `Dockerfile` and _return_ a load-balanced TLS endpoint.
-
-Arguably that would be the newest compute service [App Runner](https://aws.amazon.com/apprunner/). Like Fly.io, it provides automated deployments, load-balancing, auto-scaling, logs, custom domains and certificate management. Its usage model is also similar, billing on vCPU and memory. Behind the scenes it runs on top of ECS and Fargate however we should not need to know that.
+Arguably _that_ would be the newest compute service [App Runner](https://aws.amazon.com/apprunner/). Like Fly.io, it provides automated deployments, load-balancing, auto-scaling, logs, custom domains and certificate management. Its usage model is also similar, billing on vCPU and memory. Behind the scenes it runs on top of ECS and Fargate however we should not need to know that.
 
 With App Runner you pay a separate price for compute (vCPU-hour) and memory (GB-hour). The smallest configuration being 0.25 vCPU and 0.5 GB. It's billed per-second, with a one-minute minimum. There is an additional small fee for enabling automatic deployments and then a per-minute fee for building. The main appeal is its ability to scale to zero when idle. The trade-off is the additional price for the convenience. AppRunner is ~60% more than ECS+Fargate for the equivalent compute power.
 
@@ -74,11 +72,11 @@ We also considered [Lightsail](https://aws.amazon.com/lightsail/). You can also 
 
 With Lightsail you pay an hourly price per node which includes _both_ compute and memory. The smallest configuration being a nano node with the same 0.25 vCPU and 0.5 GB. It benefit from a free data allowance (the nano type includes 500 GB per month and then it increases from there). Load balancing is an additional fee (only needed if you have multiple container nodes) however it is a fixed monthly fee so you don't need to consider the variables of connections/bandwidth which you when provisioning your own load balancer (for example in front of EC2 or Fargate). However as of May 2023, container services are not available as targets for Lightsail load balancers. However (the FAQ states) the public endpoints of container services come with built-in load balancing.
 
-WebSockets should also be supported.
+WebSockets are also supported on Lightsail.
 
 _But_ there remains the problem that nodes on Lightsail are unable to talk to each other, in a cluster. They appear to run in an AWS-provided VPC. Your app may not need that, or use any kind of PubSub. Or perhaps you do but would support having it provided by another service, like Redis.
 
-Finally there is ECS with Fargate. That should let us do everything we need. It has been around for a while, having [celebrated its 5th birthday last year](https://aws.amazon.com/blogs/containers/happy-5th-birthday-aws-fargate/). It is now used by the likes of Goldman Sachs and Vanguard. We'll try to [deploy the app to ECS](/docs/8-deploy-to-ecs.md) and use Fargate to provide the capacity.
+That leaves ECS. With capacity provided by Fargate to keeps (a least a little) simpler. That should let us do everything we need. It supports WebSockets (using a load balancer) and it is possible for containers to communicate with each other in a cluster. It supports [service discovery](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-connect.html). You can attach persistent storage (EFS). It has also been around for a while, having [celebrated its 5th birthday last year](https://aws.amazon.com/blogs/containers/happy-5th-birthday-aws-fargate/), and is available in our region. It is now used by the likes of Goldman Sachs and Vanguard. We'll try to [deploy the app to ECS](/docs/8-deploy-to-ecs.md) and use Fargate to provide the capacity.
 
 #### Using long-polling instead of a WebSocket
 
