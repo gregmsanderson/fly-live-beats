@@ -24,7 +24,7 @@ Sign out of that AWS account as from now on you will be working within the _new_
 
 ## Sign in
 
-Depending on how your AWS accounts are configured, you _may_ sign in using single sign-on (SSO) via your employer's identity provider. Or be using AWS's own [IAM Identity Center](https://aws.amazon.com/iam/identity-center/).
+Depending on how your AWS accounts are configured, you _may_ sign in using single sign-on (SSO) via your employer's identity provider. Or be using AWS's own [IAM Identity Center](https://aws.amazon.com/iam/identity-center/). AWS has recently added IAM Identity Center (replacing AWS Single Sign-On) to let you control access to all AWS accounts within your AWS Organization, in addition to external SAML-enabled applications. You can connect it to on-premises Active Directory (AD) or provision identities from your existing identity provider. For _this_ example we only need to access _one_ AWS account, have no need to access other applications, and have no identity provider to connect to. So we won't use it here.
 
 For the purpose of this guide we'll assume you are using the standard sign-in page (using an email and password to authenticate yourself). So visit `https://NUMBER.signin.aws.amazon.com/console`, replacing `NUMBER` with that 12-digit AWS account number noted above.
 
@@ -46,15 +46,11 @@ You will want to create a new user. For that, AWS provides Identity and Access M
 
 AWS IAM lets administrators control access to AWS resources and services. Ideally you want to allow only the minimum access required, initially by service (such as _EC2_ or _S3_), and then by actions on that service (such as limiting to _GetObject_).
 
-AWS has recently added IAM Identity Center (replacing AWS Single Sign-On) to let you control access to all AWS accounts within your AWS Organization, in addition to external SAML-enabled applications. You can connect it to on-premises Active Directory (AD) or provision identities from your existing identity provider.
-
-However for _this_ example we only need to access one AWS account, have no need to access other applications, and have no identity provider to connect to. So we'll stick with creating a new IAM user.
-
 ## Create an IAM user
 
 From the AWS console, click on _Security Credntials_:
 
-![Users](img/aws_security_credentials_for_add_user)
+![Users](img/aws_security_credentials_for_add_user.jpeg)
 
 Click on _Users_ and then on the blue button to add users:
 
