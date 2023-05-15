@@ -80,23 +80,15 @@ Visit the same `https://NUMBER.signin.aws.amazon.com/console` (replacing `NUMBER
 
 These are the credentials you will use to sign in to your AWS account to use its console.
 
-**Optional:** While here you may want to set your account's default language and home region to save having to keep switching them:
-
-![Settings]img/aws_settings_language_region.jpeg)
-
 **Optional:** You may want to assign MFA to add additional protection. You can use an authenticator app, security key or hardware token:
 
 ![MFA](img/aws_iam_assign_mfa.jpeg)
 
 ## AWS CLI
 
-We will mainly be using the AWS console to deploy our app however since we will be deploying a containerized app, at some point we will need to push an image of that to AWS. That will be done using Docker, on the command line, and so we need to use the AWS CLI.
+We will mainly be using the AWS console to deploy our app however since we will be deploying a containerized app, at some point we will need to push an image of that to AWS. That will be done using Docker, on the command line, and so we need to use the AWS CLI. Make sure you have the [latest version](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
 
-Make sure you have the latest version installed:
-
-[AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
-
-You can check which version of the CLI you have from your terminal:
+You can check which you have from your terminal:
 
 ```sh
 $ aws --version
