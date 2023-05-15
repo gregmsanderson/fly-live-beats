@@ -62,13 +62,13 @@ With App Runner you pay a separate price for compute (vCPU-hour) and memory (GB-
 
 With Lightsail you pay an hourly price per node which includes _both_ compute and memory. The smallest configuration being a nano node with the same 0.25 vCPU and 0.5 GB. It benefit from a free data allowance (the nano type includes 500 GB per month and then it increases from there). Load balancing is an additional fee (only needed if you have multiple container nodes) however it is a fixed monthly fee so you don't need to consider the variables of connections/bandwidth which you when provisioning your own load balancer (for example in front of EC2 or Fargate). However as of May 2023, container services are not available as targets for Lightsail load balancers. However (the FAQ states) the public endpoints of container services come with built-in load balancing.
 
-_But_ as of 11th May 2023 App Runner does not support WebSockets. LiveView defaults to using WebSockets _however_ can fall-back to long-polling. That may be sufficient for _your_ LiveView app _if_ its real-time updates are simply used to show updates. We tried [modifying the Live Beats application to use long polling](/docs/misc-using-long-polling.md). That initially seems to work however file uploads then do not work. The current app [relies on them](https://fly.io/blog/livebeats/):
+_But_ as of 11th May 2023 App Runner does not support WebSockets. LiveView defaults to using WebSockets _however_ can fall-back to long-polling. That may be sufficient for _your_ LiveView app _if_ its real-time updates are simply used to show updates. At the end of this page you can see you can modifying the Live Beats application to use long polling. That initially seems to work however file uploads are _then_ broken. The current Live Beats app [relies on WebSockets](https://fly.io/blog/livebeats/):
 
 > ... drops a handful of MP3s into the app, we upload them concurrently over the WebSocket connection ...
 
-This particular app also makes use of another LiveView feature: clustering. It expects nodes to be able to communicate with each other. App Runner runs its instances in its own VPC. Those nodes can't communicate directly with each other.
+This particular app also makes use of another LiveView feature: clustering (via libcluster). It expects nodes to be able to communicate with each other. App Runner runs its instances in its own VPC. Those nodes can't communicate directly with each other.
 
-Finally it's still relatively new and so only available in a limited number of AWS regions. If your application is particularly sensitive to latency this may be something to consider. It's currently available in these regions:
+Finally it's still relatively new and so only available in a limited number of AWS regions. If your application is particularly sensitive to latency this may be something to consider when looking at AWS services. It's currently available in these regions:
 
 - Asia Pacific (Tokyo)
 - Asia Pacific (Singapore)
@@ -79,9 +79,7 @@ Finally it's still relatively new and so only available in a limited number of A
 - US East (Ohio)
 - US West (Oregon)
 
-Fargate [celebrated its 5th birthday last year](https://aws.amazon.com/blogs/containers/happy-5th-birthday-aws-fargate/) and is now used by the likes of Goldman Sachs and Vanguard.
-
-We'll [deploy the app to ECS](/docs/8-deploy-to-ecs.md)
+On the other hand Fargate should let us do eveyrthing we need. It has been around for a while, [celebrated its 5th birthday last year](https://aws.amazon.com/blogs/containers/happy-5th-birthday-aws-fargate/) and is now used by the likes of Goldman Sachs and Vanguard. We'll try to [deploy the app to ECS](/docs/8-deploy-to-ecs.md)
 
 #### Using long-polling instead of a WebSocket
 
