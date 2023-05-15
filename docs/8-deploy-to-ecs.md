@@ -383,6 +383,6 @@ When idle the app should use minimal resources. Even on the smallest type (0.25 
 
 You can either increase the number of tasks manually (to provision those resources in advance) or tick the box to enable auto-scaling. Fargate can then allocate the capacity for you.
 
-There is no ability to scale globally since ECS is restricted to a particular geographic region. All containers run within that one region. If you wanted to reduce latency for users who are far away, in theory you could start another ECS cluster in that region. Then use DNS (for example Route 53) ro route to the closest service to the user. However that would deploying multiple times (once to each region). Even if you did, your database remains in only one region. You would need to add read-replicas and adapt your application to use them instead.
+There is no ability to scale globally since ECS is restricted to a particular geographic region. All containers run within that one region. If you wanted to reduce latency for users who are far away, in theory you could start another ECS cluster in that region. Then use DNS (for example Route 53) to route to the closest service to the user. However that would deploying multiple times (once to each region). Even if you did do that, your database remains in only one region. You would need to add read-replicas and adapt your application to use them instead.
 
 How does [AWS pricing compare to Fly.io](/docs/9-pricing.md)?
