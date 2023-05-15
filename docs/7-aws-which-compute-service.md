@@ -51,13 +51,13 @@ Arguably _that_ would be the newest compute service [App Runner](https://aws.ama
 
 With App Runner you pay a separate price for compute (vCPU-hour) and memory (GB-hour). The smallest configuration being 0.25 vCPU and 0.5 GB. It's billed per-second, with a one-minute minimum. There is an additional small fee for enabling automatic deployments and then a per-minute fee for building. The main appeal is its ability to scale to zero when idle. The trade-off is the additional price for the convenience. AppRunner is ~60% more than ECS+Fargate for the equivalent compute power.
 
-_But_ as of 11th May 2023 App Runner [does not support WebSockets](https://github.com/aws/apprunner-roadmap/issues/13). That's not ideal as Phoenix LiveView defaults to using WebSockets. It _can_ fall-back to long-polling. That may be sufficient for _your_ LiveView app _if_ its real-time updates are simply used to show updates. At the end of this page you can see you can modify the Live Beats application to use long polling. That initially seems to work. However file uploads are _then_ broken. The current Live Beats app [relies on WebSockets](https://fly.io/blog/livebeats/):
+_But_ as of 11th May 2023 App Runner [does not support WebSockets](https://github.com/aws/apprunner-roadmap/issues/13). That's not ideal. Phoenix LiveView defaults to using WebSockets. It _can_ fall-back to long polling. That may be sufficient for _your_ LiveView app _if_ its real-time updates are simply used to show updates. At the end of this page you can see we tried to modify the Live Beats application to use long polling. That initially seemed to work, however file uploads the don't. It [relies on WebSockets](https://fly.io/blog/livebeats/) for that too:
 
 > ... drops a handful of MP3s into the app, we upload them concurrently over the WebSocket connection ...
 
-This particular app _also_ makes use of another LiveView feature: clustering. It expects nodes to be able to communicate with each other. App Runner runs its instances in its own VPC. Those nodes can't communicate directly with each other.
+This particular app _also_ makes use of another Phoenix LiveView feature: clustering. It expects nodes to be able to communicate with each other. App Runner runs instances in its own VPC. Those nodes can't communicate directly with each other.
 
-App Runner is also relatively new. It's available in a limited number of AWS regions. If your application is particularly sensitive to latency (more of an issue with LiveView due to its server-rendered updates) this may be something to consider when looking at AWS services. It's currently available in these regions:
+App Runner is also relatively new. It's available in a limited number of AWS regions. If your application is particularly sensitive to latency (that is perhaps more of an issue with LiveView due to its server-rendered updates than it is in other apps) that may be something to consider. It's currently available in these regions:
 
 - Asia Pacific (Tokyo)
 - Asia Pacific (Singapore)
@@ -68,23 +68,21 @@ App Runner is also relatively new. It's available in a limited number of AWS reg
 - US East (Ohio)
 - US West (Oregon)
 
-We also considered [Lightsail](https://aws.amazon.com/lightsail/). You can also deploy a container with load-balancing, auto-scaling, logs and certificate management. It also integrates with the AWS CDN, Cloudfront. So you can deliver static files faster and with lower latency.
+Next we considered [Lightsail](https://aws.amazon.com/lightsail/). You can deploy a container with load-balancing, auto-scaling, logs and certificate management. It also integrates with the AWS CDN, Cloudfront. So you can deliver static files faster and with lower latency.
 
 With Lightsail you pay an hourly price per node which includes _both_ compute and memory. The smallest configuration being a nano node with the same 0.25 vCPU and 0.5 GB. It benefit from a free data allowance (the nano type includes 500 GB per month and then it increases from there). Load balancing is an additional fee (only needed if you have multiple container nodes) however it is a fixed monthly fee so you don't need to consider the variables of connections/bandwidth which you when provisioning your own load balancer (for example in front of EC2 or Fargate). However as of May 2023, container services are not available as targets for Lightsail load balancers. However (the FAQ states) the public endpoints of container services come with built-in load balancing.
 
 WebSockets are also supported on Lightsail.
 
-_But_ there remains the problem that nodes on Lightsail are unable to talk to each other, in a cluster. They appear to run in an AWS-provided VPC. Your app may not need that, or use any kind of PubSub. Or perhaps you do but would support having it provided by another service, like Redis.
+_But_ there remains the problem that nodes on Lightsail are also unable to talk to each other, in a cluster. They appear to run in an AWS-provided VPC. Your app may not need that, or use any kind of PubSub. Or perhaps you do but would support having it provided by another service, like Redis.
 
-That leaves ECS. With capacity provided by Fargate to keeps (a least a little) simpler. That should let us do everything we need. It supports WebSockets (using a load balancer) and it is possible for containers to communicate with each other in a cluster. It supports [service discovery](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-connect.html). You can attach persistent storage (EFS). It has also been around for a while, having [celebrated its 5th birthday last year](https://aws.amazon.com/blogs/containers/happy-5th-birthday-aws-fargate/), and is available in our region. It is now used by the likes of Goldman Sachs and Vanguard. We'll try to [deploy the app to ECS](/docs/8-deploy-to-ecs.md) and use Fargate to provide the capacity.
+That leaves ECS. With capacity provided by Fargate. That should let us do everything we need. It supports WebSockets (using a load balancer). It is possible for containers to communicate with each other in a cluster. It supports [service discovery](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-connect.html). You can attach persistent storage (EFS). It has also been around for a while, having [celebrated its 5th birthday last year](https://aws.amazon.com/blogs/containers/happy-5th-birthday-aws-fargate/), and is available in our region. It is now used by the likes of Goldman Sachs and Vanguard. We'll try to [deploy the app to ECS](/docs/8-deploy-to-ecs.md) and use Fargate to provide the capacity.
 
-#### Using long-polling instead of a WebSocket
+#### Using long polling instead of a WebSocket?
 
 Phoenix LiveView is built on top of Phoenix channels. You need _some_ form of bi-directional client/server messaging to send real-time updates back to the client, having been rendered on the server. The default is a WebSocket. However if that is not available, it can fallback to using long polling. That makes the client use regular HTTP requests to the server to see if there have been any changes.
 
-To use a service (such as [App Runner](https://aws.amazon.com/apprunner/)) that does not support WebSockets, you could adapt it to use long polling.
-
-We _could_ make these changes to the Live Beats app:
+To use a service (such as [App Runner](https://aws.amazon.com/apprunner/)) that does not support WebSockets, you perhaps _could_ adapt it to use long polling. For example:
 
 `/assets/js/app.js`
 
@@ -147,4 +145,4 @@ to
 socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]], longpoll: [connect_info: [session: @session_options]]
 ```
 
-However this app _also_ uses the WebSocket for uploading .mp3 files. That breaks when using long polling. You will see it throws an error when it parses the data. As such App Runner is not a suitable service for _this_ app in its current form. But it may be for yours.
+However even if we do those changes, the Live Beats app _also_ uses the WebSocket for uploading .mp3 files. That breaks when using long polling. You will see it throws an error when it parses the data. As such App Runner really is not a suitable service for _this_ app in its current form. But it may be for yours.
