@@ -99,7 +99,7 @@ Monitoring is optional but since this is a demonstration we want to see a bit mo
 
 Click "Create" and you should see a panel saying that cluster creation is in progress. That will take a few moments:
 
-![ECS cluster created](img/aaws_ecs_cluster_created.jpeg)
+![ECS cluster created](img/aws_ecs_cluster_created.jpeg)
 
 A task defintion specifies _what_ to run. The image. What CPU is needed. What environment variables it needs. We need one of those.
 
