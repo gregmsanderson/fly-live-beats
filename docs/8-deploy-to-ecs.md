@@ -125,13 +125,13 @@ The Live Beats app uses port 4000 by default and so we'll specify that here too.
 
 Scroll down a bit further and you are asked for the environment variables.
 
-We never want to store values like the `DATABASE_URL` in plain text. If you recall earlier we created four secret values in AWS Systems Manager. ECS can fetch those values for us. What we need to do is enter the "Key" (which is the name we want the app to see) and the "Value" is the name of the parameter (got from the Parameter Store when we created it) and make sure to choose "ValueFrom" in that dropdown. As it explains in [using AWS Parameter store](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/secrets-envvar-ssm-paramstore.html), we can simply use the name (rather than the full "arn") provided the secret is in the same region, which in our case, it is. For example:
+We never want to store values like the `DATABASE_URL` in plain text. To solve that, recall earlier we created our secret values in AWS Systems Manager. ECS can fetch those values for us. We simply need to do is enter the "Key" (which is the name we want the app to see) and the "Value" is the name we gave the parameter (in Parameter Store). We must make sure to choose "ValueFrom" in that dropdown else it would use the path _as_ the value. As it explains in this guide to [using AWS Parameter store](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/secrets-envvar-ssm-paramstore.html) the reason we can simply use the name rather than the full "arn" is because the secret is in the same region.
+
+This is the first of the four secrets:
 
 ![ECS task secret](img/aws_systems_manager_secret_2.jpeg)
 
-You need to click the button to add more expected environment variables, with whatever name you gave them in SSM in place of these.
-
-You should have these four set:
+You need to click the button to add more expected environment variables. These are the four the app needs:
 
 1. SECRET_KEY_BASE
    /staging/fly-live-beats/secret-key-base
@@ -144,7 +144,7 @@ You should have these four set:
 
 We'll skip over the rest of the options, but if you want to provide a healthcheck or specify any limits, you can.
 
-Click "Next" to proceed to step two.
+Click "Next" to proceed on to step two.
 
 We can now specify _what_ is providing the capacity for the task. We are using "Fargate" so we'll stick with that. Below you can choose the CPU and RAM for each container. The range is from 0.25 vCPU up until 16 vCPU, and the memory available adjusted too. The cost increases accordingly so we'll start off with the smallest size:
 
@@ -152,11 +152,13 @@ We can now specify _what_ is providing the capacity for the task. We are using "
 
 If your container needs access to other AWS services (for example to upload a file to S3) you would need to create and provide a role for it. Our app doesn't.
 
-We'll pick the `ecs_task_execution_role` for ECS to use. As mentioned earlier, since we are storing secrets in SSM, ECS needs to be able to fetch those. If it can't, the deployment will likely get stuck and fail. And if we leave it to create a role for itself (the default) it (oddly) does not realise it needs that access and so fails to add it.
+We'll pick the `ecs_task_execution_role` that we created earlier for ECS to use. We did that because we are storing secrets in another service. ECS needs to be able to fetch those. If it can't, the deployment will likely fail. And if we leave it to create an execution role for itself (the default) it does not realise it needs that access and so fails to add it.
 
-We'll leave the rest of the values as their defaults. Each container gets at least 21 GB of ephemeral storage so we don't need to enter any value to use that.
+We'll leave the rest of the values as their defaults.
 
-**Important:** This particular app involves uploading files and storing them in a local drive (rather than e.g S3). You would want that data to persist. As such, you would _not_ want to leave the storage option as it is, with simple ephemeral storage, as that would be lost. You would click 'Add volume" to add a volume. You would not want to opt for "Bind mount" either. As it says [in the docs](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_data_volumes.html?icmpid=docs_ecs_hp-task-definition);
+Each container gets at least 21 GB of ephemeral storage so we don't need to enter any value to use that.
+
+**Important:** The Live Beats app involves uploading files and storing them in a local drive (rather than S3). You would want that data to persist. As such, you would _not_ want to leave the storage option as it is by default, with ephemeral storage, as that would be lost. You would instead click 'Add volume" to add a volume. You would not want to opt for "Bind mount" either. As it says [in the docs](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_data_volumes.html?icmpid=docs_ecs_hp-task-definition);
 
 > Bind mounts are tied to the lifecycle of the container that uses them. After all of the containers that use a bind mount are stopped, such as when a task is stopped, the data is removed.
 
@@ -166,13 +168,13 @@ Instead you would pick "EFS" as the volume type, then add the rest of the detail
 
 We'll leave logging enabled. That goes to Cloudwatch. It should show you the name of your log (for example `/ecs/your-name`). We'll check on that later if there are any issues. We won't collect the extra values and so can leave them unchecked.
 
-Click "Next" to proceed.
+Click "Next" to proceed to the final step.
 
-You can now scroll down to review all the values you have entered to check they look ok. All good? Click "Create".
+Scroll down to review all the values you have entered to check they look ok. All good? Click "Create".
 
-In a few seconds you should see the task definition has been created. If you need to edit it, you should see a button to create a new revision with the exisitng values pre-entered. They are versioned.
+In a few seconds you should see the task definition has been created. If you need to edit it, you should see a button to create a new revision with the exisitng values pre-entered. They are versioned by number.
 
-AWS now knows what to run. You now need to run it. That can be done either as a 'Service' or 'Task'. A task is generally a one-off action which runs and then ends (like when processing files, such as in a batch). We want a 'Service' which will keep running:
+AWS now knows _what_ to run. You now need to run it. That can be done either as a 'Service' or 'Task'. A task is generally a one-off action which runs and then ends (like when processing files, such as in a batch). We want a 'Service' which will keep running:
 
 ![ECS created task](img/aws_ecs_task_created.jpeg)
 
@@ -188,7 +190,7 @@ Next you need to choose what will provide the capacity for your containers to ru
 
 The initial configuration is relatively simple: we want to run a service. We'll use the latest version of our image. We'll give it a name.
 
-**IMPORTANT:** To make sure the service itself is valid, we recommend initially setting the number of tasks as 0. Why? Well if there is any issue, the entire stack fails (which can take up to ten minutes), then rolls back (taking even longer), and your entire service is deleted. Meaning you have to enter _all_ these values again. Setting it to 0 means the service can be deployed. Only if _that_ works can we _then_ increase the tasks (to 1+). If it doesn't work at this point, well we have eliminated the task itself as being the issue:
+To make sure the service itself is valid, we recommend **initially** setting the number of tasks to run as `0`. Why? Well if there is any issue, the _entire_ stack fails (which can take up to ten minutes), then rolls back (taking even longer) ... and your entire service is deleted. Meaning you have to enter _all_ these values above again. Setting it to `0` here means the service can be deployed. Only if _that_ works can we _then_ increase the tasks number (for example to `1`):
 
 ![ECS service](img/aws_ecs_create_service_2.jpeg)
 
