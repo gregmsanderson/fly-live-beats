@@ -1,8 +1,8 @@
 # Deploy to AWS
 
-## Create an AWS account
+Of course you will need an AWS account.
 
-You will need an AWS account.
+## Create an AWS account
 
 If you _don't_ have any AWS account, create a new one by visiting [https://aws.amazon.com/](https://aws.amazon.com/) and clicking the button to create a new AWS account. You will be asked for your email address and to give your account a name.
 
@@ -14,7 +14,7 @@ If you do not see the option to manage the organization within your AWS account,
 
 Click the button to create a new account:
 
-![AWS Organizations](/img/aws_organizations_2.jpeg)
+![AWS Organizations](img/aws_organizations_2.jpeg)
 
 **Note:** You will need to enter a unique email address per AWS account. To save creating a new mailbox/user each time, some email providers support using an alias address. For example with Gmail you can append `+something` like `you+awstest@company.com`. We recommend sending a test email to your chosen address to make sure it works before using it.
 
@@ -30,7 +30,7 @@ For the purpose of this guide we'll assume you are using the standard sign-in pa
 
 You may be initially prompted to sign in as an IAM user. If so, click the blue link to sign in as the new account's _root_ user instead:
 
-![AWS sign in](/img/aws_sign_in_root_1.jpeg)
+![AWS sign in](img/aws_sign_in_root_1.jpeg)
 
 Enter your chosen email address (for example `you+awstest@company.com`) and click the blue **Next** button.
 
