@@ -2,18 +2,19 @@
 
 For this guide I tried running the same app on both Fly.io and AWS.
 
-This particular app is **substantially** easier to deploy on Fly.io. Whether that is the case for your app will depend on exactly what functionality it requires:
+This particular app is **substantially** easier to deploy on Fly.io. Whether that is the case for _your_ app will depend on exactly what functionality it requires. In particular:
 
 - Do you need a WebSocket?
 - Do the nodes need to communicate with each other (libcluster)?
+- Does it need persistent local storage?
 
-If your app either does not need (or can get by without) a WebSocket, more compute options become available to you. Using their newest service, App Runner, would be substantially simpler. If you do need a WebSocket, there is the less well known Lightsail. You can deploy a container there relatively simply.
+If your app does not need a WebSocket then more compute options become available to you. Their newest service, App Runner, appears to be much simpler. If you _do_ need a WebSocket, there is the Lightsail. That does support WebSockets and it is also simpler to deploy a container.
 
-However for both App Runner and Lightsail, the containers are run within an AWS-provided VPC. They can not communicate with each other. If any kind of PubSub is needed, you would need to use something like Redis (in AWS, that would mean Elasticache).
+However both App Runner and Lightsail run containers within an AWS-provided VPC. They can not communicate with each other. If any kind of PubSub is needed you would need to use something like Redis (in AWS, that would mean Elasticache) at an extra cost.
 
 If you are happy to pay per request, there is Lambda. It doesn't support Elixir as a run-time, however you can deploy a container to it.
 
-As regards ease of use, AWS is much more complicated. Arguably that is because it is more flexible. For example in Fly.io, you have a single private network per organization. All of your resources are placed within that, and they can automatically talk to each other (using IPv6) without additional configuration. In an AWS account you can have multiple VPCs. Resources can not automatically communicate with each other. You need to configure security groups for each resource. To complicate that slightly for newer users, the destination you provide is actually the _security group_ used by the other resource, rather than "it". So if you would like an ECS service to be able to connect to an RDS database, for the RDS security group you would need to allow inbound connections from the ECS service's _security group_.
+As regards ease of use, AWS is much more complicated. Arguably that is because it is more flexible. For example in Fly.io, you have a single private network per organization. All of your resources are placed within that. They can automatically talk to each other (using IPv6) without additional configuration. In an AWS account you can have multiple VPCs. Resources in each can not _automatically_ communicate with each other. You need to configure security groups for each resource. To complicate that slightly for newer users, the destination you provide is actually the _security group_ used by the other resource, rather than "it". So if you would like an ECS service to be able to connect to an RDS database, for the RDS security group you would need to allow inbound connections from the ECS service's _security group_.
 
 Assuming you are not using a custom domain for your app, an Appliication Load Balancer does provide you with a hostname (what it calls its DNS name) such as `name.region.elb.amazonaws.com`. However that does not support using port 443/HTTPS as a listener by default. Unlike on Fly.io, where its provided hostname (such as `name.fly.dev`) does. You can immediately use HTTPS (which all production applications should be). In AWS you have to provide a custom domain to use 443/HTTPS.
 
@@ -27,8 +28,10 @@ It is not entirely fair to compare the database options on Fly.io and AWS. Fly.i
 
 There is no real option to scale _globally_ on AWS. It used clearly separated geographic regions. You can use [geolocation routing](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy-geo.html) within Route 53 to make sure your users are served by an app closest to them. However that means _replicating_ the resources in all those regions (for example adding a load balancer in each one). Assuming you are using the most common type, an Aplication Load balancer (ALB), _each one_ costs a minimum of ~$20 ($0.02646 per ALB-hour, assuming the eu-west-2 region, which excludes the additional LCU-hour metric). See [ALB pricing](https://aws.amazon.com/elasticloadbalancing/pricing/?nc=sn&loc=3). With Fly.io, _their_ load balancer (they call it the proxy) is provided for free and using anycast automatically handles global applications.
 
+In conclusion, if you are deploying the Live Beats app (or a similar Phoenix LiveView app that needs both WebSockets and libcluster) we would recommend using Fly.io over AWS.
+
 ## Notes
 
-For AWS we are basing pricing on the eu-west-2 region. Fly has the same compute cost in eveery region but we have been using its lhr region.
+For AWS we are basing pricing on the `eu-west-2` region. Fly has the same compute cost in eveery region but we have been using its `lhr` region.
 
 AWS pricing [assumes 730 hours in a month](https://aws.amazon.com/calculator/calculator-assumptions/)
