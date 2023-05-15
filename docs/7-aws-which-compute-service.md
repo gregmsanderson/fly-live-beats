@@ -8,7 +8,7 @@ The oldest compute service is EC2, exiting beta way back 2008. In fact that was 
 
 ## Which AWS compute service should I use?
 
-Even if we limit our selection to options to run a _container_, there are [still several](https://aws.amazon.com/containers/services/). These quotes are from th AWS site:
+Even if we limit our selection to only options that [mention running a container](https://aws.amazon.com/containers/services/) there are still quite a few:
 
 ECS?
 
