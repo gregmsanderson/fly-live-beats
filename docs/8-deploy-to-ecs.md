@@ -240,7 +240,7 @@ If the tasks keep failing, and being put back as "desired", see if the "Logs" ta
 
 ![ECS tasks running](img/aws_ecs_code_error.jpeg)
 
-If your code _does_ need changing, remember you will need to build an new image, tag it, then push it to ECR (unless you have remote builds set up using a CI service). Once your new image is in ECR, you will need to manually trigger a new deploy of your service (for example by using that "Update service" button).s
+If your code _does_ need changing, remember you will need to build an new image, tag it, then push it to ECR (unless you have remote builds set up using a CI service). Once your new image is in ECR, you will need to manually trigger a new deploy of your service (for example by using that "Update service" button).
 
 Let's check the "Logs" tab:
 
@@ -282,9 +282,9 @@ You should now see a new message appear in the "Logs" tab. It is complaining var
 
 The reason that table does not exist is because it is created by running the migrate script. That has not been done anywhere yet,
 
-The problem her is that while it is (in theory) possible to execute a command in a Fargate container ... there is no task running. It keeps failing. Because ... of the lack of a database. Hmm.
+The problem is that while it is now possible to execute a command (exec) in a Fargate container ... there is no task running. It keeps failing. Because ... of the lack of a database. Hmm ...
 
-For now the solution seems to be (slightly awkwardly) to run the migration in the `Dockerfile`. That's not ideal, however it should work.
+For now the solution appears to be (slightly awkwardly) to run the migration in the `Dockerfile`. That's not _ideal_ however it should work.
 
 Change its last line to be (tmporarily):
 
