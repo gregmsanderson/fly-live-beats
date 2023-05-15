@@ -194,9 +194,7 @@ To make sure the service itself is valid, we recommend **initially** setting the
 
 ![ECS service](img/aws_ecs_create_service_2.jpeg)
 
-In the networking panel, we'll leave the default VPC (that is where our RDS database is). However we want to create a new security group, rather than use the default one, as then we can control access to our service. It's not entirely clear however when you use a load balancer (which we will do), this is the security group which controls access to _that_. In our case we want to make our app available to the public on port 80 (HTTP) so add a rule that allows access to `0.0.0.0/0` (which means any IP). If your app is using port `443` (which it should be) or you want to control access to it, adjust that accordingly. You can edit it later too.
-
-Next, we need to put a load balancer in front of this service. So give that a name:
+In the networking panel, we'll leave the default VPC (that is where our RDS database is). However we want to create a new security group, rather than use the default one, as then we can control access to our service. So give it a name. It's not entirely clear however when you use a load balancer (which we will do), _this_ is the security group which controls access to _that_. In our case we want to make our app available to the public on port `80` (HTTP) so add a rule that allows access to `0.0.0.0/0` (which means any IP). If your app is using port `443` for HTTPS, you will need another rule for that. You can edit the rules later (if the load balancer can't connect to the container, or you can't connect to the load balancer):
 
 ![ECS service](img/aws_ecs_create_service_3.jpeg)
 
@@ -208,7 +206,7 @@ Next we do need to provide a load balancer. This is the kind of setup we will th
 
 Image from: `https://aws.amazon.com/getting-started/guides/deploy-webapp-ecs/module-one/`.
 
-We need a load balancer because the public IPs are ephemeral. Our containers will be stopped, restarted and replaced. We need a fixed hostname that can be pointed at them. Choose "Application Load Balancer" as we are working with HTTP requests. Then give it a name. We only have one container to load balance, so that is already selected. Next you are asked for the port/protocol. In production you would pick `443` and `HTTPS`. However an ALB does not come with a default certificate ([people have asked](https://stackoverflow.com/questions/65326652/why-is-it-not-possible-to-create-an-alb-with-https-listener-without-a-custom-dom)). So if you do pick `443` you are then asked to provide an already-made SSL certificate, from the AWS ACM service. AWS can make a certificate for you (for free) using ACM, however we have not done that already and so none are available to pick. So for now we'll stick with using port 80/HTTP. And since this is a new load balancer, there is no existing target group. This will be a new one. We just need to give it a name. That's because ALBs can be re-used across services (which also reduces cost). You may re-use this ALB for another ECS service, or pointed at a Lambda function. The target group name just identifies this particular usage of it:
+We need a load balancer because the public IPs are ephemeral. Our containers will be stopped, restarted and replaced. We need a fixed hostname that can be pointed at them. Choose "Application Load Balancer" as we are working with HTTP requests. Then give it a name. We only have one container to load balance, so that is already selected. Next you are asked for the port/protocol. In production you would pick `443` and `HTTPS`. However an ALB does not come with a default certificate ([people have asked](https://stackoverflow.com/questions/65326652/why-is-it-not-possible-to-create-an-alb-with-https-listener-without-a-custom-dom)). So if you do pick `443` you are then asked to provide an already-made SSL certificate, from the AWS ACM service. AWS can make a certificate for you (for free) using ACM, however we have not done that already and so none are available to pick. So for now we'll stick with using port 80/HTTP. And since this is a new load balancer, there is no existing target group. This will be a new one. We just need to give it a name. That's because ALBs can be re-used (which also reduces cost). For example you may use this same ALB for another ECS service. Or have it pointed at a Lambda function on a different path. The target group name just identifies _this_ particular usage of it. Which is the only one, but that's fine:
 
 ![ALB](img/aws_ecs_create_service_4.jpeg)
 
@@ -222,11 +220,11 @@ That should create the service, along with its dependencies (such as the load ba
 
 It worked!
 
-If you recall earlier on we launched the service with 0 tasks, to ensure we got a version set up. So that's currently the case:
+If you recall earlier on we deliberately launched this service with `0` tasks to ensure we got a version that worked:
 
 ![ECS service created](img/aws_ecs_service_created.jpeg)
 
-Click the "Update service" button in the top-right. We now need to specify the number of tasks. We'll start with 1:
+We now need to specify the number of tasks. Click the "Update service" button in the top-right and edit that desired tasks number to `1`:
 
 ![ECS tasks](img/aws_ecs_service_update.jpeg)
 
@@ -242,82 +240,84 @@ If the tasks keep failing, and being put back as "desired", see if the "Logs" ta
 
 ![ECS tasks running](img/aws_ecs_code_error.jpeg)
 
-If your code _does_ need changing, remember you will need to build an new image, tag it, then push it to ECR (unless you have remote builds set up using a CI service). Once your new image is in ECR, a new version of the ECS service should be deployed (if it is set to use the latest revision, which ours is).
+If your code _does_ need changing, remember you will need to build an new image, tag it, then push it to ECR (unless you have remote builds set up using a CI service). Once your new image is in ECR, you will need to manually trigger a new deploy of your service (for example by using that "Update service" button).s
 
-If this app is working correctly, you should see in the "Logs" tab:
+Let's check the "Logs" tab:
 
 ![ECS task running](img/aws_ecs_service_logs_working.jpeg)
 
 Great! It's running. Those log lines have been generated by the app, running in the container.
 
-But before we try loading it in the browser (which won't work - you'd get a 504 error), we need to let the container connect to the database. Currently it won't be able to since if you recall when we created the database we gave it a new security group. It knows nothing about ECS. We need to tell it.
+But before we try loading it in the browser (which won't currently work - you'd get a 504 error), we need the container to be able to connect to the database. Currently it won't be able to, despite having a valid connection string. If you recall when we created the database we gave it a new security group. RDS knows nothing about ECS. We need to tell it.
 
 ## Database access
 
 The first thing to make sure is that your database is in the same VPC as your ECS container. Throughout this guide we have been using the same default VPC, so it is.
 
-Since we created a security group for ECS, and a security group for RDS, and their IPs may change, the simplest option is for each to reference the _other_ security group. That allows communication between them.
+Since we created a new security group for ECS and a new security group for RDS, and their IPs may change, the simplest option is for each to reference the _other_ security group. That allows communication between them.
 
-To edit their rules, type "VPC" in the search bar, and enter the VPC console. In the left-hand menu you should see "Security groups" listed. Click on that.
+To edit each one, type "VPC" in the search bar, and enter the VPC console. In the left-hand menu you should see "Security groups" listed. Click on that.
 
-As you can see, we have two security groups. One is the RDS one, created when we created our database. We gave it the name `aws-rds-fly-live-beats-sg` to make it easily identifiable. And the other one is the security group that controls access to ECS, which we created earler. We gave that the name `fly-live-beats-service-sg`.
+As you can see, we have two security groups. One is the RDS one, created when we created our database. We gave ours the name `aws-rds-fly-live-beats-sg` to make it easily identifiable. And the other one is the security group that controls access to ECS, which we created above. We gave that the name `fly-live-beats-service-sg`:
 
 ![Security Groups](img/aws_security_groups.jpeg)
 
-For the ECS security group, click the "Outbound rules" tab. Click on the edit rules button. You want to allow TCP traffic on port 5432. The destination is custom, and in the next box choose the RDS security group (it should pre-fill with options when you start typing).
+Tick the box next to your ECS security group and click the "Outbound rules" tab. Click on the "edit rules" button. You want to allow TCP traffic on port 5432 (the Postgres port). The destination is "custom", and in the next box choose the RDS security group (it should pre-fill with options when you start typing).
+
+**Important:** Do not delete or edit the outbound rule provided by AWS for ECS to send traffic to any IP. It needs to send data (for example to Cloudwatch) and if unable to, ECS will repeatedly try to start a task, and fail, and there won't be anything in the "Logs" tab to indicate why.
 
 Click "Save rules".
 
-You also want to do the same for the RDS to allow _inbound- connections from ECS. And so select \_that_ RDS security group. Click the "Inbound rules" tab. Click "Edit inbound rules". You may already have a rule in here for allowing access (such as from your office IP). Click the "Add rule" button and allow TCP port 5432 from the ECS security group. Something like this:
+You also need to do the same for the RDS security group to allow incoming connections from ECS. Tick the box next to the RDS security group. Click the "Inbound rules" tab. Click "Edit inbound rules". You may already have a rule in here for allowing access (such as from your office IP). Click the "Add rule" button and allow TCP port 5432 from the ECS security group. Something like this:
 
 ![Security group access](img/aws_security_group_rds.jpeg)
 
-**Important:** Do not delete or edit the outbound rule provided by AWS for ECS to send traffic to any IP. It needs to send data (for example to Cloudwatch) and if unable to, ECS will repeatedly try to start a task, and fail, and there won't be anything in the "Logs" tab to indicate why!
-
 ## Database migration
 
-Assuming you have the RDS and ECS security groups correctly configured, they should be able to communicate with each other.
+Assuming you have the RDS and ECS security groups correctly configured, they should now be able to communicate with each other.
 
-You should now see a new message appear in the logs tab: it is complaining that the "users" does not exist. That confirms it _was_ able to both fetch the correct database URL (from SSM, provided as a secret) _and_ also connect to that database (in order to know that that table does not exist):
+You should now see a new message appear in the "Logs" tab. It is complaining various tables do not exist. That confirms it _was_ able to both fetch the correct database URL (from SSM, provided as a secret) _and_ also connect to that database (in order to know that that table does not exist):
 
 ![RDS connected](img/aws_rds_connected_no_table.jpeg)
 
 The reason that table does not exist is because it is created by running the migrate script. That has not been done anywhere yet,
 
-The problem is that while it is (in theory) possible to execute a command in a Fargate container ... there is no task running. It keeps failing. Because ... of the lack of a database.
+The problem her is that while it is (in theory) possible to execute a command in a Fargate container ... there is no task running. It keeps failing. Because ... of the lack of a database. Hmm.
 
-For now the solution seems to be (slightly awkwardly) to run the migration in the `Dockerfile`. Generally not ideal, however it should work.
+For now the solution seems to be (slightly awkwardly) to run the migration in the `Dockerfile`. That's not ideal, however it should work.
 
-Change the last line to be:
+Change its last line to be (tmporarily):
 
 ```sh
 # temporary (to get ECS up and running)
 CMD /app/bin/migrate;/app/bin/server
 ```
 
-... build a new image, tag it, and push it to ECR. That should trigger a new deployment of the ECS service. If not you can click "Update service" and tick the box to force a new deployment. You can keep track in the service's "Deployments and Events" tab. You may need to click the refresh icon.
+Since you have changed its code, you need build a new image, tag it, and push it to ECR.
 
-Now when that container runs, it should migrate the database and then run the app.
+Then click "Update service" and tick the box to force a new deployment. You can keep track in the service's "Deployments and Events" tab.
 
-If you switch to the "Logs" tab you should see when the container runs the `CMD` is executed, and so the database is migrated:
+Now when _that_ container runs in a minute or so, it should migrate the database and _then_ run the app.
+
+If you switch to the "Logs" tab you should see when the container runs the `CMD`. You should see the database is migrated:
 
 ![DB migrate](img/aws_ecs_db_migrate.jpeg)
 
-Now remove that migrate command from the `Dockerfile` CMD, putting it back how it was.
+Now you can remove that migrate command from the `Dockerfile` and so putting it back how it was.
 
 ## Load balancer
 
-As part of the deployment of the service, a load balancer was created. You can access that via the EC2 console, scroll down, and click on "Load balancers" in the left-hand menu. You should see the ALB with the name you gave it listed there. It should have a "DNS Name" which you can copy. You can load that in your browser, and if all is working and there is a healthy service, that should route requests to the container being run by the service.
+As part of the deployment of the service, a load balancer was created. You can access that via the EC2 console, scroll down, and click on "Load balancers" in the left-hand menu. You should see the ALB with the name you gave it listed there. It should have a "DNS Name" which you can copy.
 
-If there is no response (like a 504) error, check the security group (that's a firewall) assigned to it. You can see which one from its "Security" tab. Click on its ID there to view its rules and make sure your IP is included (for example if it only allows access to certain ones).
+You can load that in your browser, and if all is working and there is a healthy service, that should route requests to the container being run by the service.
 
-You may also need to include TCP port 4000 to the security group as it is shared by ECS. Currently the Live Beats app defaults to listening on port 4000. Unless you change it by overriding that, such as by setting a `PORT` variable.
-
-If you want your app available to the public, on IPv4, for HTTP requests, the security group should contain a rule like this to allow access to any IP:
+If there is no response (like a 504) error, check the security group assigned to it. You can see which one from its "Security" tab. Click on its ID there to view its rules and make sure your IP is included (for example if it only allows access to certain ones, rather than `0.0.0.0/0`):
 
 ![ALB](img/aws_alb_security_group.jpeg)
 
-You may also need to check its healthcheck. We have set the app's healthcheck to request the `/signin` path, on port 4000, with 2 retries, and a timeout of 2 seconds. That passes. We expect a success code of 200:
+If the load balancer target (the container) is showing as unhealthy, try adding a rule to that ECS security group to allow incoming requests on TCP port 4000. Currently the Live Beats app defaults to listening on port 4000. Those requests (between the load balancer and container) may be being blocked.
+
+If that is not the issue, you may also need to check the load balancer's healthcheck. We have set our healthcheck to request the `/signin` path, on port `4000`,s with 2 retries, and a timeout of 2 seconds. That passes. We expect a success code of 200:
 
 ![ALB healthcheck](img/alb_healthcheck_passes.jpeg)
 
@@ -333,33 +333,35 @@ Scroll down and click "Create" to create the new revision.
 
 As before, to apply that you will need to click on the service, and then click the "Update service" button in the top-right. Choose the revision you have just created from the dropdown, scroll down, and click "Update". Then wait for it to deploy.
 
-## Signing in
+## Signing in to the live Beats app
 
-If you recall, we did not create a GitHub OAuth app prior to deploying this to ECS. That was because we did not know what its hostname would be at that point. We do now. So we need to create a new app. We'll use the hostname of the ALB (again, you might be using your own custom domain and so use that in its place).
+We should now be able to see the sign in page in th browser, which is served from the container.
 
-You can create one from [this page](https://github.com/settings/applications/new). Give it a name, set the homepage to `http://app-name.alb-12345.eu-west-2.elb.amazonaws.com` (of course actually use your hostname) and the authorization callback URL to the matching one e.g `http://app-name.alb-12345.eu-west-2.elb.amazonaws.com/oauth/callbacks/github`. Click the button. You will be shown its client ID. Click the button to _Generate a new client secret_.
+But ... if you recall we did not create a GitHub OAuth app prior to deploying this. That was because we did not know what its hostname would be. We do now. So we need to create a new app in GitHub. We'll use the hostname of the ALB (again, you might be using your own custom domain, in which case use that in its place below).
 
-Copy both those values.
+You can create a new app from [this page](https://github.com/settings/applications/new). Give it a name, set the homepage to `http://app-name.alb-12345.eu-west-2.elb.amazonaws.com` (of course actually use your hostname) and the authorization callback URL to the matching one e.g `http://app-name.alb-12345.eu-west-2.elb.amazonaws.com/oauth/callbacks/github`. Click the button. You will be shown its client ID. Click the button to _Generate a new client secret_.
 
-Remember the task definition fetches them from SSM. The path to them is the same. So we do not need to edit the task definition. Instead, we need to edit the value in SSM. So in the console, search for "Systems Manager". Remember the "Parameter Store" is in there, in the left-hand menu.
+Copy both of those values.
 
-Click on `/staging/fly-live-beats/live-beats-github-client-id` (or whatever you called it in SSM), click on the "Edit" button, scroll down, and now paste in that value box at the bottom the _actual_ value you just got from GitHub (in place of the "placeholder" value currently there). Save changes.
+The task definition fetches those two secret values from the Parameter Store. The path to them is the same. So we do not need to edit the ECS task definition. Instead, we need to edit the value in SSM. So ... in the console, search for "Systems Manager". Remember the "Parameter Store" is in there, in the left-hand menu.
 
-Do the same for the client secret. So on `/staging/fly-live-beats/live-beats-github-client-secret` (or whatever you called it in SSM), click on the "Edit" button, scroll down, and now paste in that value box at the bottom the _actual_ value you just got from GitHub (in place of the "placeholder" value currently there). Save changes.
+Click on `/staging/fly-live-beats/live-beats-github-client-id` (or whatever you called it), click on the "Edit" button, scroll down, and now paste in that value box at the bottom the _actual_ value you just got from GitHub (in place of the "placeholder" value currently there). Save changes.
 
-Great! Now we need another deployment of our task in order to force those new ones to be used, as of course ECS does not know we just changed them.
+Do the same for the client secret. So on `/staging/fly-live-beats/live-beats-github-client-secret` (or whatever you called it), click on the "Edit" button, scroll down, and now paste in that value box at the bottom the _actual_ value you just got from GitHub (in place of the "placeholder" value currently there). Save changes.
 
-Go back to the ECS console. Click on the service, on "Update service", and since we haven't changed anything, this time simply tick the box at the top to force a new deployment. Click the button at the bottom, and wait a few moments for that deployment to start. As usual you can check on its progress in the "Deployments and Events" tab. It should start the new task and then stop the old task, transitioning over.
+Now we need another deployment of our task in order to force those new values to be used. ECS does not know we just changed them.
+
+Go back to the ECS console. Click on the service, on "Update service", and since we haven't changed anything, this time simply tick the box at the top to force a new deployment. Click the button at the bottom, and wait a few moments for that deployment to start. As usual you can check on its progress in the "Deployments and Events" tab. It should start the new task and then stop the old task, transitioning over:
 
 ![ECS deployments](img/ecs_deployments.jpeg)
 
-In the "Logs' tab you should see the ALB healthcheck requests being made and still continue to pass.
+In the "Logs' tab you should see the ALB healthcheck requests being made (in our case, to `/signin`) and still continue to pass.
 
-Switch over to your browser and reload the ALB hostname (or your equivalent).
+Switch over to your browser and reload the ALB's hostname (or your equivalent hostname).
 
-Since we set the `PHX_HOST` variable as that value, the WebSocket error should have gone away. It has!
+Since we set the `PHX_HOST` variable as that value in the task definition that should now be running, the WebSocket error should have gone away.
 
-And now we have provided a valid GitHub OAuth app client ID/secret, using the correct hostname, we should now be able to sign in:
+And now that we have provided a valid GitHub OAuth app client ID/secret (using the correct hostname) we should now be able to sign in too.
 
 It works! 🚀
 
@@ -367,15 +369,7 @@ It works! 🚀
 
 ![ECS app upload files](img/ecs_app_upload_files.jpeg)
 
-**Note:** You can upload an .mp3 file, however it is uploaded to ephemeral storage. If you recall when we created the app, we did not specify to use EFS. That's the persistent store. Your file could be deleted at any time.
-
-If you do upload an .mp3 file and it does not play, that is _likely_ because by default the Live Beats app is set to serve assets over https. We have not set up a certificate in AWS ACM and so when creating the ALB, we had to use port 80/HTTP for the listener (rather than port 443/HTPS). As such the request for the file will fail, since the ALB will not respond to HTTPS requests. Assuming at this point you are using 80/HTTP too, make sure the app will serve files over HTTP. If you need to change this part, remember you also need to build, tag and push a new image to ECR in order for ECS to access the latest version.
-
-If you are building locally, push, _and_ see "Your authorization token has expired. Reauthenticate and try again.", you will need to do that. That means running the _first_ of the four commands (the one starting `aws ecr get-login-password ...` which gets a token from AWS and pipes that to your local Docker client).
-
-Pushing a new image to ECR does not automatically trigger a new deployment, so click the "Update service" button, tick the box to "Force new deployment", and proceed. Wait a minute for the deployment to proceed, the ALB to drain the connections and the new service to load in its place.
-
-Your .mp3 should then play:
+**Note:** You can upload an .mp3 file, however it is uploaded to ephemeral storage. If you recall when we created the app, we did not specify to use EFS. That's the persistent store. Your file could be deleted at any time. If you do upload an .mp3 file and it does not play, that is _likely_ because (by default) the Live Beats app is set to serve those assets over https. We have not set up a certificate in AWS ACM and so when creating our ALB, we had to use port 80/HTTP for the listener (rather than port 443/HTPS). As such the request for the file will fail, since the ALB will not respond to HTTPS requests. We edited _our_ copy of the to instead use http (in `runtime.exs`).
 
 ![ECS app mp3 plays](img/ecs_app_mp3_plays.jpeg)
 
@@ -389,6 +383,6 @@ When idle the app should use minimal resources. Even on the smallest type (0.25 
 
 You can either increase the number of tasks manually (to provision those resources in advance) or tick the box to enable auto-scaling. Fargate can then allocate the capacity for you.
 
-There is no ability to scale globally since ECS is restricted to a particular geographic region. All containers run within that one region. If you wanted to reduce latency for users who are far away, in theory you could start another ECS cluster in that region. Then use DNS (for example Route 53) ro route to the closest service to the user. However that would deploying multiple times and so would be very awkward to do. Even if you were to, your database remains in one region. You would need to add read-replicas and adapt your application to use them instead.
+There is no ability to scale globally since ECS is restricted to a particular geographic region. All containers run within that one region. If you wanted to reduce latency for users who are far away, in theory you could start another ECS cluster in that region. Then use DNS (for example Route 53) ro route to the closest service to the user. However that would deploying multiple times (once to each region). Even if you did, your database remains in only one region. You would need to add read-replicas and adapt your application to use them instead.
 
 How does [AWS pricing compare to Fly.io](/docs/9-pricing.md)?
