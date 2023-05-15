@@ -2,15 +2,13 @@
 
 ## Create a database
 
-Whether we run it on App Runner, Lightsail, ECS, we know this app will need a PostgreSQL database. Like with Fly.io, we will create that first so that we can provide the app with a `DATABSE_URL` connection string.
+We know this app will need a PostgreSQL database. We will create the database before the app so that we can provide it with a `DATABSE_URL` connection string.
 
-The database will run on AWS Relational Database Service (RDS). Unlike on Fly.io, RDSs is a managed service and so AWS takes care of monitoring, restarting and letting you easily restore from a backup if necessary.
+The database will run on AWS Relational Database Service (RDS). Unlike on Fly.io, RDS is a managed service and so AWS takes care of monitoring, restarting and letting you easily restore from a backup if necessary.
 
 Search for "RDS" in the console and click that blue link:
 
 ![RDS search](img/aws_rds_search.jpeg)
-
-Since RDS is a managed service, there are a variety of options to improve performance and reliability for production applications.
 
 You may see AWS promote their new option to use [blue/green deployments](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/blue-green-deployments.html). That lets you apply changes to the staging environment before promoting that to production. It may be worth considering if your app uses one of the supported engines, however currently that does not include PostgreSQL and so we'll skip it. Click the button to "create database":
 
@@ -24,15 +22,17 @@ Scroll down. The templates are fairly self-explanatory. Pick the one appropriate
 
 A single DB instance is the cheapest. Just _one_ instance and so has no fail-over/high-availability. A Multi-AZ DB instance has _two_ instances: a primary and a standby (in a different AZ), so _does_ have high-availability. The most expensive option is a Multi-AZ DB cluster. This has _three_ instances: a primary and two read-replicas.
 
+We'd probably recommend the middle option (unless you need read-replicas).
+
 Scroll down and give the database a name.
 
-Then give the initial main user a name. The default is _postgres_.
+Then give the initial user a name. The default is _postgres_ which is fine.
 
-You can either let AWS generate a password for you, or enter your own random one. As with any password, make sure to keep it secret and keep it out of your code.
+You can either let AWS generate a password for you, or enter your own. As with any password, make sure to keep it secret. Keep it out of your code. If it has to be used in sa connection string, make sure that is stored encrypted.
 
-Scroll down to choose the instance configration. If you click on the dropdown menu you can see all of the available ones. The smallest size (the micro instance) has 2 vCPU and 1 GB of RAM. The "t" instances are bustable which means they get a share of the CPU. They can't use it continually however most applications would not need that. They are substantially cheaper than the larger classes.
+Scroll down further and choose the instance configration. If you click on the dropdown menu you can see all of the available ones. The smallest size (the micro instance) has 2 vCPU and 1 GB of RAM. The "t" instances are bustable. That means they get a share of the CPU. They are substantially cheaper than the larger classes and should be fine for small applications.
 
-Next you can choose the initial disk size. The default is the smallest value: 20GB. Handily that can auto-scale so you don't need to over-provision storage to begin with:
+Next choose the initial disk size. The default is the smallest value: 20GB. Handily RDS can auto-scale the disk so you don't need to over-provision storage to begin with:
 
 ![RDS disk size](img/aws_rds_disk_size.jpeg)
 

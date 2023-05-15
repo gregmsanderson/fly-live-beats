@@ -54,7 +54,7 @@ We'd like a service which (like Fly.io) can take in a `Dockerfile` and return a 
 
 Arguably that would be the newest compute service [App Runner](https://aws.amazon.com/apprunner/). Like Fly.io, it provides automated deployments, load-balancing, auto-scaling, logs, custom domains and certificate management. Its usage model is also similar, billing on vCPU and memory.
 
-We also considered [Lightsail](https://aws.amazon.com/lightsail/). You can also deploy a container with load-balacning, auto-scaling, logs and certificate management. It also integrates with the AWS CDN, Cloudfront. So you can deliver static files faster and with lower latency.
+We also considered [Lightsail](https://aws.amazon.com/lightsail/). You can also deploy a container with load-balancing, auto-scaling, logs and certificate management. It also integrates with the AWS CDN, Cloudfront. So you can deliver static files faster and with lower latency.
 
 App Runner and Lightsail have slightly different billing models.
 
@@ -79,7 +79,7 @@ Finally it's still relatively new and so only available in a limited number of A
 - US East (Ohio)
 - US West (Oregon)
 
-On the other hand Fargate should let us do eveyrthing we need. It has been around for a while, [celebrated its 5th birthday last year](https://aws.amazon.com/blogs/containers/happy-5th-birthday-aws-fargate/) and is now used by the likes of Goldman Sachs and Vanguard. We'll try to [deploy the app to ECS](/docs/8-deploy-to-ecs.md)
+On the other hand Fargate should let us do everything we need. It has been around for a while, [celebrated its 5th birthday last year](https://aws.amazon.com/blogs/containers/happy-5th-birthday-aws-fargate/) and is now used by the likes of Goldman Sachs and Vanguard. We'll try to [deploy the app to ECS](/docs/8-deploy-to-ecs.md)
 
 #### Using long-polling instead of a WebSocket
 

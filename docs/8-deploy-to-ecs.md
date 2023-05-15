@@ -190,7 +190,7 @@ The initial configuration is relatively simple: we want to run a service. We'll 
 
 In the networking panel, we'll leave the default VPC (that is where our RDS database is). However we want to create a new security group, rather than use the default one, as then we can control access to our service. It's not entirely clear however when you use a load balancer (which we will do), this is the security group which controls access to _that_. In our case we want to make our app available to the public on port 80 (HTTP) so add a rule that allows access to `0.0.0.0/0` (which means any IP). If your app is using port `443` (which it should be) or you want to control access to it, adjust that accordingly. You can edit it later too.
 
-Next, we waant to put a load balancer in front of this service. So give that a name:
+Next, we need to put a load balancer in front of this service. So give that a name:
 
 ![ECS service](img/aws_ecs_create_service_3.jpeg)
 
