@@ -2,7 +2,7 @@
 
 ## Create a database
 
-This app will need a PostgreSQL database. Like with Fly.io, we will create that first so that we can provide the app with a `DATABSE_URL` connection string.
+Whether we run it on App Runner, Lightsail, ECS, we know this app will need a PostgreSQL database. Like with Fly.io, we will create that first so that we can provide the app with a `DATABSE_URL` connection string.
 
 The database will run on AWS Relational Database Service (RDS). Unlike on Fly.io, RDSs is a managed service and so AWS takes care of monitoring, restarting and letting you easily restore from a backup if necessary.
 
@@ -111,4 +111,4 @@ postgres=# grant all privileges on database fly_live_beats_db to fly_live_beats;
 
 Done! Type `\q` to quit and return to your terminal. The database is now ready for our app to connect to.
 
-Our database is now set up. We now need to store the `DATABASE_URL` connection string [as a secret](/docs/5-aws-create-secrets.md).
+Our database is now set up. We now need to store the `DATABASE_URL` connection string. So we will proceed to [create a secret](/docs/5-aws-create-secrets.md).
