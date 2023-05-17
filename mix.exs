@@ -54,7 +54,8 @@ defmodule LiveBeats.MixProject do
       {:heroicons, "~> 0.2.2"},
       {:castore, "~> 0.1.13"},
       {:tailwind, "~> 0.1"},
-      {:libcluster, "~> 3.3.1"}
+      {:libcluster, "~> 3.3.1"},
+      {:libcluster_ecs, github: "pro-football-focus/libcluster_ecs"} # modified for AWS (added this strategy for libcluster on ECS)
     ]
   end
 

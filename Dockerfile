@@ -86,15 +86,6 @@ COPY --from=builder --chown=nobody:root /app/_build/prod/rel/live_beats ./
 
 USER nobody
 
-# Set the runtime ENV
-##### original (it was written to deploy to Fly.io) #####
-#ENV ECTO_IPV6="true"
-#ENV ERL_AFLAGS="-proto_dist inet6_tcp"
-##### modified (for local/AWS) #####
-#ENV ECTO_IPV6="true"
-#ENV ERL_AFLAGS="-proto_dist inet6_tcp"
+# modified for AWS (no IPv6)
 
-# original (how it should be)
 CMD /app/bin/server
-# temporary (to get AWS ECS up and running)
-#CMD /app/bin/migrate;/app/bin/server

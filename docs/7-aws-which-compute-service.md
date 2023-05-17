@@ -36,26 +36,19 @@ Lightsail?
 
 :confused:
 
-Some services provide more abstraction than others. For an objective comparison to Fly.io we really want to limit ourselves to services that _also_ hide (at least some of) the complexity. We'd also like to avoid learning a whole new set of terms (Kubernetes and its Ingress Controllers, Services, Pods, ConfigMaps ...). Your choices may well be different. You may already be experienced with Kubernetes and so immediately opt for EKS. You may be familiar with networking and favour working with the underlying instances to have the widest selection of types (EC2).
+Some services provide more abstraction than others. For an objective comparison to Fly.io we really want to limit ourselves to services that _also_ hide (at least some of) the complexity. We'd also like to avoid learning a whole new set of terms (Kubernetes and its Ingress Controllers, Services, Pods, ConfigMaps ...). Your choices may well be different. For example you may already be experienced with Kubernetes and so immediately opt for EKS (which this application could run on).
 
-Essentially at the lowest level is EC2. They are the virtual machines (otherwise known as instances).
-
-ECS lets you run a container. Two services can provide the _capacity_ to run that container: Fargate and EC2:
-
-- ECS tasks run on _Fargate_ is the default option. It's now pre-selected for new ECS clusters. That is the "serverless" approach. It provides more abstraction. You only pay when the task is running. But when it _is_ running, that compute costs more.
-- ECS tasks can instead run on _EC2_. Using EC2 to provide the capacity lets you pick from a much larger number of instances. It gives you greater control. Plus it's cheaper. However it is more complex to manage as you are then responsible for provisioning EC2 instances and have to ensure you have _sufficient_ capacity for your container(s).
-
-Both sound complicated. Ideally we'd like a service which (like Fly.io) can take _in_ a `Dockerfile` and _return_ a load-balanced TLS endpoint.
+Ideally we'd like a service which (like Fly.io) can take _in_ a `Dockerfile` and _return_ a load-balanced TLS endpoint.
 
 Arguably _that_ would be the newest compute service [App Runner](https://aws.amazon.com/apprunner/). Like Fly.io, it provides automated deployments, load-balancing, auto-scaling, logs, custom domains and certificate management. Its usage model is also similar, billing on vCPU and memory. Behind the scenes it runs on top of ECS and Fargate however we should not need to know that.
 
 With App Runner you pay a separate price for compute (vCPU-hour) and memory (GB-hour). The smallest configuration being 0.25 vCPU and 0.5 GB. It's billed per-second, with a one-minute minimum. There is an additional small fee for enabling automatic deployments and then a per-minute fee for building. The main appeal is its ability to scale to zero when idle. The trade-off is the additional price for the convenience. AppRunner is ~60% more than ECS+Fargate for the equivalent compute power.
 
-_But_ as of 11th May 2023 App Runner [does not support WebSockets](https://github.com/aws/apprunner-roadmap/issues/13). That's not ideal. Phoenix LiveView defaults to using WebSockets. It _can_ fall-back to long polling. That may be sufficient for _your_ LiveView app _if_ its real-time updates are simply used to show updates. At the end of this page you can see we tried to modify the Live Beats application to use long polling. That initially seemed to work, however file uploads the don't. It [relies on WebSockets](https://fly.io/blog/livebeats/) for that too:
+_But_ as of 11th May 2023 App Runner [does not support WebSockets](https://github.com/aws/apprunner-roadmap/issues/13). That's not ideal. Phoenix LiveView defaults to using WebSockets. It _can_ fall-back to long polling. That may be sufficient for _your_ LiveView app _if_ its real-time updates are simply used to show updates. We tried to modify the Live Beats application to use long polling. That _initially_ seemed to work however file uploads then don't. It [relies on WebSockets](https://fly.io/blog/livebeats/) for that too:
 
 > ... drops a handful of MP3s into the app, we upload them concurrently over the WebSocket connection ...
 
-This particular app _also_ makes use of another Phoenix LiveView feature: clustering. It expects nodes to be able to communicate with each other. App Runner runs instances in its own VPC. Those nodes can't communicate directly with each other.
+This particular app _also_ makes use of another Phoenix LiveView feature: clustering. It expects nodes to be able to communicate with each other. App Runner runs instances in its own VPC.
 
 App Runner is also relatively new. It's available in a limited number of AWS regions. If your application is particularly sensitive to latency (that is perhaps more of an issue with LiveView due to its server-rendered updates than it is in other apps) that may be something to consider. It's currently available in these regions:
 
@@ -76,73 +69,11 @@ WebSockets are also supported on Lightsail.
 
 _But_ there remains the problem that nodes on Lightsail are also unable to talk to each other, in a cluster. They appear to run in an AWS-provided VPC. Your app may not need that, or use any kind of PubSub. Or perhaps you do but would support having it provided by another service, like Redis.
 
-That leaves ECS. With capacity provided by Fargate. That should let us do everything we need. It supports WebSockets (using a load balancer). It is possible for containers to communicate with each other in a cluster. It supports [service discovery](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-connect.html). You can attach persistent storage (EFS). It has also been around for a while, having [celebrated its 5th birthday last year](https://aws.amazon.com/blogs/containers/happy-5th-birthday-aws-fargate/), and is available in our region. It is now used by the likes of Goldman Sachs and Vanguard. We'll try to [deploy the app to ECS](/docs/8-deploy-to-ecs.md) and use Fargate to provide the capacity.
+Perhaps ECS. ECS lets you run a container. Two services can provide the _capacity_ to run that container: Fargate and EC2:
 
-#### Using long polling instead of a WebSocket?
+- ECS tasks run on _Fargate_ is the default option. It's now pre-selected for new ECS clusters. That is the "serverless" approach. It provides more abstraction. You only pay when the task is running. But when it _is_ running, that compute costs more.
+- ECS tasks can instead run on _EC2_. Using EC2 to provide the capacity lets you pick from a larger number of instances. It gives you greater control. Plus it's cheaper. However it is more complex to manage as you are then responsible for ensuring you have _sufficient_ capacity for your container(s) to run.
 
-Phoenix LiveView is built on top of Phoenix channels. You need _some_ form of bi-directional client/server messaging to send real-time updates back to the client, having been rendered on the server. The default is a WebSocket. However if that is not available, it can fallback to using long polling. That makes the client use regular HTTP requests to the server to see if there have been any changes.
+That should let us do everything we need. It supports WebSockets (using a load balancer). It is possible for containers to communicate with each other in a cluster. It supports [service discovery](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-connect.html). You can attach persistent storage (EFS). It has also been around for a while, having [celebrated its 5th birthday last year](https://aws.amazon.com/blogs/containers/happy-5th-birthday-aws-fargate/) and is available in our region. It is now used by the likes of Goldman Sachs and Vanguard.
 
-To use a service (such as [App Runner](https://aws.amazon.com/apprunner/)) that does not support WebSockets, you perhaps _could_ adapt it to use long polling. For example:
-
-`/assets/js/app.js`
-
-Change:
-
-```js
-import { Socket } from "phoenix";
-```
-
-to
-
-```js
-import { Socket, LongPoll } from "phoenix";
-```
-
-Change:
-
-```js
-let liveSocket = new LiveSocket("/live", Socket, {
-  hooks: Hooks,
-  params: { _csrf_token: csrfToken },
-  dom: {
-    onNodeAdded(node) {
-      if (node instanceof HTMLElement && node.autofocus) {
-        node.focus();
-      }
-    },
-  },
-});
-```
-
-to
-
-```js
-let liveSocket = new LiveSocket("/live", Socket, {
-  transport: LongPoll,
-  hooks: Hooks,
-  params: { _csrf_token: csrfToken },
-  dom: {
-    onNodeAdded(node) {
-      if (node instanceof HTMLElement && node.autofocus) {
-        node.focus();
-      }
-    },
-  },
-});
-```
-
-`lib/live_beats_web/endpoint.ex`
-
-Change:
-
-```elixir
-socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
-```
-
-to
-
-```elixir
-socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]], longpoll: [connect_info: [session: @session_options]]
-```
-
-However even if we do those changes, the Live Beats app _also_ uses the WebSocket for uploading .mp3 files. That breaks when using long polling. You will see it throws an error when it parses the data. As such App Runner really is not a suitable service for _this_ app in its current form. But it may be for yours.
+We'll try to [deploy the app to ECS](/docs/8-deploy-to-ecs.md) and use Fargate to provide the capacity.
