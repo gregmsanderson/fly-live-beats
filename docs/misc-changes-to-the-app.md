@@ -21,7 +21,9 @@ Protocol 'inet6_tcp': register/listen error: eaddrnotavail
 
 ##### rel/env.sh.eex
 
-On Fly.io it would be possible for the app to get its IP using the private network they provide. Locally (and on AWS) of course that is not available, so we need to instead use `hostname` (there are other ways to do it). That file _now_ contains:
+On Fly.io it would be possible for the app to get its IP using the private network they provide. Locally (and on AWS) of course that is not available, so we need to instead use `hostname -i` (there are other ways to do it: running `wget -qO- http://169.254.170.2/v2/metadata | jq -r .Containers[0].Networks[0].IPv4Addresses[0]` within a container should _also_ return that same IP).
+
+That file _now_ contains:
 
 ```sh
 # modified for AWS (no fly-local-6pn here)

@@ -86,7 +86,7 @@ These are the credentials you will use to sign in to your AWS account to use its
 
 ## AWS CLI
 
-We will mainly be using the AWS console to deploy our app however since we will be deploying a containerized app, at some point we will need to push an image of that to AWS. That will be done using Docker, on the command line, and so we need to use the AWS CLI. Make sure you have the [latest version](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
+We will mainly be using the AWS console to deploy our app however we also need to use the AWS CLI (for example to get shell access to our container). Make sure you have the [latest version](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
 
 You can check which you have from your terminal:
 
@@ -107,7 +107,7 @@ We are going to use the key for the CLI so select that option:
 
 ![IAM access key for CLI](img/aws_iam_select_cli.jpeg)
 
-If you scroll down it mentions that _ideally_ we'd use IAM Identity Center in conjnction with the AWS CLI v2. As mentioned above, your organisation may already be doing that in conjunction with an identity provider. We haven't and so we'll proceed to create a new key.
+As it says, _ideally_ we'd use IAM Identity Center in conjunction with the AWS CLI v2. Your organisation may already be doing that in conjunction with an identity provider. We'll proceed to create a new key.
 
 You can provide a description for the key. That is a good idea to remind you of what it was used for (to know the impact of rotating/deleting it in future):
 
@@ -117,7 +117,7 @@ Click the button to proceed.
 
 You should be shown _two_ values: the **Access key** and **Secret access key**. You need both of those values. They will only be shown once. You might find it helpful to click the small square icon that's just next to each of those values to copy them briefly to your clipboard.
 
-**Iimportant:** As the console makes clear these values should **never** be stored in plain text, or in your code. They should be deleted when no longer needed.
+**Important:** As the console makes clear these values must be kept secret and should **never** be stored in your code. They should be deleted when no longer needed.
 
 Once you have noted them, click "Done".
 
@@ -125,7 +125,7 @@ You can now use those credentials with the AWS CLI, giving you programmatic acce
 
 For reference, the credentials file is stored at `~/.aws/credentials` on Linux/macOS, or `C:\Users\USERNAME\.aws\credentials` on Windows.
 
-## VScode
+## VSCode
 
 If you use VSCode, AWS [provide an extension](https://docs.aws.amazon.com/toolkit-for-vscode/latest/userguide/setup-toolkit.html) which lets you manage AWS resources within it:
 

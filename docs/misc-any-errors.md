@@ -171,4 +171,10 @@ If your database can't connect you will probably see an error messages like: ` (
 
 The first thing to check would be the "Monitoring" tab for your database in the RDS console. Check its CPU load, memory usage and connections. Does it appeaar overloaded? A temporary fix can be to increase its size. Longer-term that can be expensive though.
 
-The smallest instances have a limited number of available connections. They can become exhaused. You can force the app to us fewer by setting an environment variable called `POOL_SIZE`. The default value is `10`. Temporarily try setting that as a lower number to make it open fewer connections.
+The smallest instances have a limited number of available connections. They can become exhaused. See `https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Limits.html` and scroll down to "Maximum number of database connections". If you see this error:
+
+```sh
+14:02:26.007 [error] Postgrex.Protocol (#PID<0.2080.0>) failed to connect: ** (Postgrex.Error) FATAL 53300 (too_many_connections) remaining connection slots are reserved for non-replication superuser and rds_superuser connections
+```
+
+... that will probably be why. You can force the app to use fewer by setting a plain text environment variable in your task definition called `POOL_SIZE`. Its default value is `10`. Temporarily you could try setting that as a lower number to make it open fewer connections.

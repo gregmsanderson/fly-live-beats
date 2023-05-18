@@ -22,16 +22,16 @@ After a few seconds your repository will be created.
 
 ## Build an image locally
 
-We need to get an image of the app into that remote repository. Like with Fly.io, you can choose whether to build locally or have a remote service (such as GitHub Actions) build the image for you. Building it locally is likely going to be slower (how fast it pushes is of course dependent on your network connection) however it is free.
+We need to get an image of the app _into_ that remote repository. Like with Fly.io, you can choose whether to build locally or have a remote service (such as GitHub Actions) build the image for you. Building it locally is likely going to be slower (how fast it pushes is of course dependent on your network connection) however it is free.
 
-We'll try building locally using Docker. If you don't already have [Docker](https://docs.docker.com/engine/install/#installation) installed and running, please add that:
+We'll try building locally, using Docker. If you don't already have [Docker](https://docs.docker.com/engine/install/#installation) installed and running, you will need to add that:
 
 ```sh
 $ docker --version
 Docker version 23.0.1-rd, build 393499b
 ```
 
-We need to get the commands to build, tag and push the image to ECR. Click on the name of the repository. We want these commands:
+We need to get the commands to build, tag and push the image to ECR. Click on the name of the repository. Handily AWS builds the commands for you:
 
 ![ECR push image](img/aws_ecr_click_on_it.jpeg)
 
@@ -83,6 +83,6 @@ That may take a minute depending on the speed of your internet connection. It ma
 
 If you still have the AWS console open, if you now check your repository (you may need to refresh) you should see your image is listed there.
 
-Now the image is ready to be deployed.
+Now the image is ready to be deployed to ... _somewhere_.
 
-We need to [decide which AWS compute service](/docs/7-aws-which-compute-service.md) to use to run the container.
+We need to [decide which AWS compute service](/docs/7-aws-which-compute-service.md) to use.

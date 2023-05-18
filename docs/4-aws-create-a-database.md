@@ -30,27 +30,27 @@ Then give the initial user a name. The default is _postgres_ which is fine.
 
 You can either let AWS generate a password for you, or enter your own. As with any password, make sure to keep it secret. Keep it out of your code. If it has to be used in sa connection string, make sure that is stored encrypted.
 
-Scroll down further and choose the instance configration. If you click on the dropdown menu you can see all of the available ones. The smallest size (the micro instance) has 2 vCPU and 1 GB of RAM. The "t" instances are bustable. That means they get a share of the CPU. They are substantially cheaper than the larger classes and should be fine for small applications.
+Scroll down further and choose the instance configration. If you click on the dropdown menu you can see all of the available ones. The smallest size (the micro instance) has 2 vCPU and 1 GB of RAM. The "t" instances are bustable. That means they get a share of the CPU. They are substantially cheaper than the larger classes however support [fewer connections](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Limits.html). You can always edit the size later.
 
-Next choose the initial disk size. The default is the smallest value: 20GB. Handily RDS can auto-scale the disk so you don't need to over-provision storage to begin with:
+Next choose its initial disk size. The default is the smallest value: 20GB. Handily RDS can auto-scale the disk so you don't need to over-provision storage to begin with:
 
 ![RDS disk size](img/aws_rds_disk_size.jpeg)
 
 Next, the connectivity. It asks if you want to set up a connection to an existing EC2 instance. We don't have one, so we'll skip that.
 
-For the network type, we'll leave the default as IPv4. If you recall, the default VPC created by AWS does not have IPv6 enabled.
+For the network type, we'll leave the default. IPv4. If you recall, the default VPC created by AWS does not have IPv6 enabled.
 
-Next, the VPC. We'll leave the default one selected. We'll be using that same one later as we will need to connect our compute service to this database. We'll use the default subnet group too.
+Next, the VPC. We'll leave the default one selected. We'll be using that same one later as we will need to connect our compute service to this database. We'll use the default subnet group too. The default VPC includes three subnets. Ideally you would use a private subnet. take a look at `https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_VPC.Scenarios.html`. A _public_ subnet is one that is associated with a route table that _has_ a route to an Internet gateway. A _private_ subnet is associated with a route table that \_does not have a route to an internet gateway.
 
-Next, whether to allow public access.
+Next, whether to allow public access. Ideally you don't want to. Saying yes does not directly open it up to the whole world, in that sense of "public". That would be _very_ bad. Instead it determines whether a public IP is added, and so whether it is _possible_ to connect it from outside your VPC. For example from your local PC. _Who_ can access it is controlled within its security group. That is a virtual firewall (in the next panel down). In the security group you can allow access from only your IP.
 
-Note that this does not open it up to the whole world. That would be _very_ bad. Instead it determines whether a public IP is added, and so whether it is _possible_ to connect it from outside your VPC. For example from your local PC. Who can access it is controlled within the security group. That acts as its firewall (in the next panel down). In the security group you can allow access from "the public" to only your IP, for example. Ideally you should choose "no" however here we will (initially) choose "yes' as we will demonstrate connecting to the database from your local machine later on.
+We know our database is currently empty and that this is just a demo app. We will (initially) choose "yes" as we want to demonstrate connecting to a database from your local machine later on.
 
-Choose the option to create a new security group rather than use the default one, as then (from its name) it is clear what it is being used for. It makes it much easier to connect other applications to it as you can then select the RDS security group rather than have to remember what the one called "default" is actually being used by:
+Next, choose the option to create a new security group (rather than use the default one). That's important. It makes it _much_ easier to connect other applications to this database as you can then select this RDS security group by name in the security group, rather than have to remember what the "default" one is being used by:
 
 ![RDS security group](img/aws_rds_security_group.jpeg)
 
-We'll leave the rest as their default options. Any AZ (Availability Zone). No RDS proxy (_that_ is much more applicable when your compute is AWS Lambda since that can quickly scale to many concurrent requests which potentially exceed the number of connections RDS can support). We'll leave the default of authentication with a password (it is not possible to use IAM-only). We'll leave the rest of the defaults (for example in the "Additional configuration" panel you can change the backup schedule - the default is to automatically backup, and keep those for seven days. If there is a particular time of day you would prefer the backup be taken, you can specify that there).
+We'll leave the rest as their default options. Any AZ (Availability Zone). No RDS proxy (_that_ is more applicable when your compute is AWS Lambda since that can quickly scale to many concurrent requests, exceeding the number of connections RDS can support). We'll leave the default of authentication with a password (it is not possible to use IAM-only). We'll leave the rest of the defaults (for example in the "Additional configuration" panel you can change the backup schedule - the default is to automatically backup, and keep those for seven days. If there is a particular time of day you would prefer the backup be taken, you can specify that there).
 
 Before creating the database, make sure to look at the "estimated monthly costs" panel to make sure it is as you expect. Naturally the more replication/instances you have, and the larger their size, the more that cost will be. You can also check the [RDS pricing page](https://aws.amazon.com/rds/postgresql/pricing/?pg=pr&loc=3), making sure to pick _your_ AWS region as the pricing does vary per-region.
 
@@ -70,7 +70,7 @@ Let's take a look at the first tab. Its "Connectivity & security". If you scroll
 
 ## Connect to the database
 
-If you said "Yes" when asked whether to allow public access using the wizard, AWS should have created a new security group and added your current IP to that automatically. You should see in the "Security group rules" panel two rules. The top row, the "CIDR/IP - Inbound", should have access from your current IP as allowed. For example "1.2.3.4/32". That means you will be able to access it from your local machine. You could either use your favourite database UI/editor or use the command line. Since we have PostgreSQL installed already we'll use the command line `psql`:
+Assuming you said "Yes" when asked whether to allow public access, AWS should have added your current IP to its security group automatically. You should see in the "Security group rules" panel two rules. The top row, the "CIDR/IP - Inbound", should have access from your current IP as allowed. For example "1.2.3.4/32". That means you will be able to access it from your local machine. You could either use your favourite database UI/editor or use the command line. Since we have PostgreSQL installed already we'll use the command line `psql`:
 
 ```sh
 $ psql --version
@@ -105,7 +105,7 @@ postgres=> \l
 
 Great! It works.
 
-Now our Live Beats app _could_ also use that `postgres` user. However that is a super-user and it's probably better if we create a new user, just for the app. We can then avoid using the `postgres` password at all. Let's create a new user, give them a password, and then create a new database ready for our app to use (replace these values below with whatever database name, username and password _you_ want to use). Make a note of them as you'll need to provide them to the app later:
+The Live Beats app _could_ also use that `postgres` user. However that is a super-user and it's probably better if we create a new user, just for the app. We can then avoid using the `postgres` password at all. Let's create a new user, give them a password, and then create a new database ready for our app to use (replace these values below with whatever database name, username and password _you_ want to use). Make a note of them as you'll need to provide them to the app later:
 
 ```sh
 postgres=# create database fly_live_beats_db;
@@ -119,4 +119,4 @@ Type `\q` to quit and return to your terminal. The database is now ready for our
 
 You shouldn't need public access enabled and so you can edit that to be "no" if you like.
 
-Next, we know our app uses values that need to be kept seecret. Let's proceed to [create the secrets](/docs/5-aws-create-secrets.md).
+Next, we know our app uses values that need to be kept seecret. Let's proceed to [create those secrets](/docs/5-aws-create-secrets.md).
