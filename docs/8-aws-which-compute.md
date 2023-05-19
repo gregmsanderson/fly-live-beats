@@ -10,39 +10,39 @@ The oldest compute service is EC2, exiting beta way back 2008. In fact that was 
 
 Limiting the selection to only options that [mention running a container](https://aws.amazon.com/containers/services/) there are still quite a few:
 
-##### ECS?
+#### ECS?
 
 > Amazon Elastic Container Service (Amazon ECS) is a fully managed container orchestration service that provides the most secure, reliable and scalable way to run containerized applications.
 
-##### Fargate?
+#### Fargate?
 
 > AWS Fargate is a serverless compute engine for containers.
 
-##### EC2?
+#### EC2?
 
 > Run containers on virtual machine infrastructure with full control over configuration and scaling.
 
-##### App Runner?
+#### App Runner?
 
 > AWS App Runner is a fully managed service that makes it easy for developers to quickly deploy containerized web applications and APIs, at scale and with no prior infrastructure experience required.
 
-##### EKS?
+#### EKS?
 
 > Amazon Elastic Kubernetes Service (Amazon EKS) is a fully managed Kubernetes service that provides the most secure, reliable, and scalable way to run containerized applications using Kubernetes.
 
-##### Lightsail?
+#### Lightsail?
 
 > Amazon Lightsail offers a simple way for developers to deploy their containers to the cloud.
 
 :confused:
 
-Ideally a service which (like Fly.io) can take _in_ a `Dockerfile` and _return_ a load-balanced TLS endpoint. I'd like to avoid learning a whole new set of terms (Kubernetes and its Ingress Controllers, Services, Pods, ConfigMaps ...). Your choices may well be different. For example you may already be experienced with Kubernetes and so immediately opt for EKS (which this application should be able to run on).
+Ideally I want a service which (like Fly.io) can take _in_ a `Dockerfile` and _return_ a load-balanced TLS endpoint. I'd like to avoid learning a whole new set of terms (Kubernetes and its Ingress Controllers, Services, Pods, ConfigMaps ...). Your choices may well be different. For example you may already be experienced with Kubernetes and so immediately opt for EKS (which this application should be able to run on).
 
 Arguably the closest is their newest compute service, [App Runner](https://aws.amazon.com/apprunner/). Like Fly.io, it provides automated deployments, load-balancing, auto-scaling, logs, custom domains and certificate management. Its usage model is also similar, billing on vCPU and memory.
 
 With App Runner you pay a separate price for compute (vCPU-hour) and memory (GB-hour). The smallest configuration being 0.25 vCPU and 0.5 GB. It's billed per-second, with a one-minute minimum. There is an additional small fee for enabling automatic deployments and then a per-minute fee for building. The main appeal is its ability to scale to zero when idle. The trade-off is the additional price for the convenience. AppRunner is ~60% more than ECS+Fargate for the equivalent compute power.
 
-_But_ as of May 2023 App Runner [does not support WebSockets](https://github.com/aws/apprunner-roadmap/issues/13). That's not ideal. Phoenix LiveView defaults to using WebSockets. It _can_ fall back to long polling. That may be sufficient for _your_ LiveView app _if_ its real-time updates are simply used to show updates. I tried to modify the Live Beats application [to use long polling](/docs/misc-changes-to-the-app.md). That _initially_ seemed to work however file uploads then were broken. Live Beats [relies on WebSockets](https://fly.io/blog/livebeats/) for that too:
+_But_ as of May 2023 App Runner [does not support WebSockets](https://github.com/aws/apprunner-roadmap/issues/13). That's not ideal. Phoenix LiveView defaults to using WebSockets. It _can_ fall back to long polling. That may be sufficient for _your_ LiveView app _if_ its real-time updates are simply used to show updates. I tried to modify the Live Beats application [to use long polling](/docs/misc-changes-to-the-app.md#no-websocket-available). That _initially_ seemed to work however file uploads then were broken. Live Beats [relies on WebSockets](https://fly.io/blog/livebeats/) for that too:
 
 > ... drops a handful of MP3s into the app, we upload them concurrently over the WebSocket connection ...
 
