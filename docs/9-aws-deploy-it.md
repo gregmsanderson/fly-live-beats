@@ -290,15 +290,13 @@ However traffic between the instance and the load balancer also incurs a cost (d
 
 Next, create a new security group (which is a virtual firewall), rather than use the default one. Give it a name for example `fly-live-beats-service-sg`.
 
-**Note:** When you also set up a new load balancer (in a moment, to allow traffic to be split over multiple containers), initially this will be the security group which controls access to _that_. That will be changed later as it seems there is no option to do that here right now.
+**Note:** When you also set up a new load balancer (in a moment, to allow traffic to be split over multiple containers), initially this will also be its security group. That will be changed later as it seems there is no option to do that here right now.
 
-I want the app available to the public on port `443` (HTTPS) so (for now) add a rule that allows access from `0.0.0.0/0` (which means any IP). You can edit the rules later (if the load balancer can't connect to the container, or you can't connect to the load balancer).
-
-You also want to allow inbound connections on the "custom TCP" port of `4000`. Once the load balancer has its own security group, access to the container can be restricted to just it, on port `4000`:
+You want to allow inbound connections to the _container_ on the TCP port `4000`. Set the source as `0.0.0.0/0` if you want to allow access to it from any IP. You will be changing these rules later on.
 
 ![ECS service](img/aws_ecs_create_service_3.jpeg)
 
-I'll leave _on_ the public IP. **That can't be edited later**. That setting is important because I'm launching the Fargate tasks in a _public_ subnet. According to this answer `https://repost.aws/knowledge-center/ecs-unable-to-pull-secrets` if you _don't_ have a public IP, by default ECS won't be able to fetch those secrets:
+I'll opt to leave _on_ the public IP. **That can't be edited later**. That setting is important because I'm launching the Fargate tasks in a _public_ subnet. According to this answer `https://repost.aws/knowledge-center/ecs-unable-to-pull-secrets` if you _don't_ have a public IP, by default ECS won't be able to fetch those secrets:
 
 > If you have a Fargate task in a public subnet, then verify that your task has an assigned public IP address ... When you launch a new task or create a new service, turn on Auto-assign public.
 
@@ -308,11 +306,11 @@ Next: opt to create a new load balancer. To reduce cost you don't _have_ to have
 
 Image from `https://aws.amazon.com/getting-started/guides/deploy-webapp-ecs/module-one/`.
 
-Choose "Application Load Balancer" as the live Beats app is working with HTTP requests. Give it a name. There is only one container to load balance so that is already selected.
+Choose "Application Load Balancer" as the Live Beats app is working with HTTP requests. Give it a name. There is only one container to load balance so that is already selected.
 
-Next you are asked for the port/protocol. Pick `443` and `HTTPS`.
+Next you are asked for the port/protocol for its listener. Pick `443` and `HTTPS`.
 
-Note from earlier that an [ALB does not come with a default certificate](https://stackoverflow.com/questions/65326652/why-is-it-not-possible-to-create-an-alb-with-https-listener-without-a-custom-dom) and so I [created one in ACM](/docs/4-aws-create-certificate.md) for that very reason. Hopefully that is verified by now and so is available to select here. Since by picking `443` you are _then_ asked to provide an already-made SSL certificate, from the AWS ACM service.
+Note from earlier that an [ALB does not come with a default certificate](https://stackoverflow.com/questions/65326652/why-is-it-not-possible-to-create-an-alb-with-https-listener-without-a-custom-dom) and so I [created one in ACM](/docs/4-aws-create-certificate.md) for that very reason. Hopefully that is verified by now and so is available to select from ACM here. By picking `443` you are _then_ asked to provide an already-made SSL certificate.
 
 Since this is a new load balancer, there is no existing target group. This will be a new one. We just need to give it a name. That's because ALBs can be re-used across services (which also reduces cost). For example you may use this same ALB for another ECS service. Or have it pointed at something else, such as a Lambda function, on a different path. The target group's name identifies _this_ particular usage of it:
 
