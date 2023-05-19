@@ -350,7 +350,7 @@ Give this new one a new name to identify it. For example this one could be calle
 
 In the "Inbound rules" panel, click the "Add rule" button.
 
-Assuming you want your load balancer open to the public to access, you can allow access on `HTTPS` (port `443`) from anyone by using `0.0.0.0/0`:
+Assuming you want your load balancer open to the public to access, you would allow access on `HTTPS` (which is TCP port `443`) from anyone by using `0.0.0.0/0`. Not port 80, which is shown here:
 
 ![ECS lb](img/ecs_load_balancer_80.jpeg)
 
