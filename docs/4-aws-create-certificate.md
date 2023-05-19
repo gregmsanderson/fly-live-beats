@@ -46,10 +46,6 @@ Click "Save" to add that DNS record.
 
 Now switch back to the ACM console. It _usually_ validates a new domain within an hour. If not and your certificate still shows as pending, take a look at their [troubleshooting page](https://docs.aws.amazon.com/acm/latest/userguide/troubleshooting-DNS-validation.html).
 
-You can carry on with this guide while you wait. At some point it should validate your domain and will then show as issued:
+You can carry on with this guide while you wait. At some point it should validate your domain. It will then show as being issued.
 
-![Verified](img/aws_acm_certificate_issued.jpeg)
-
-Now that you have a certificate you can create/edit AWS resources to use it 🚀 .
-
-Next I'll [create a database](/docs/5-aws-create-database.md) for the app.
+While I wait I'll [create a database](/docs/5-aws-create-database.md) for the app.
