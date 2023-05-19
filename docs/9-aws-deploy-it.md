@@ -212,10 +212,10 @@ Value: `/staging/fly-live-beats/live-beats-github-client-id`
 Key: `LIVE_BEATS_GITHUB_CLIENT_SECRET`
 Value: `/staging/fly-live-beats/live-beats-github-client-secret`
 
-You also need to set some plain text environment variables. For _these_ make sure to choose `Value` as they don't need to be fetched from somewhere else. They _are_ the values:
+You also need to set some plain text environment variables. For _these_ make sure to choose `Value` from that dropdown as they _don't_ need to be fetched from somewhere else. They _are_ the values:
 
 Key: `PHX_HOST`
-Value: This should _either_ be your own custom domain e.g `www.your-domain.com` or be the load balancer's hostname e.g `your-hostname.elb.amazonaws.com`.
+Value: This should be your own domain e.g `www.your-domain.com`. If for some reason you do not want to use one, use the load balancer's hostname e.g `your-name-elb.region.amazonaws.com`.
 
 Key: `AWS_ECS_CLUSTER_REGION`
 Value: The AWS region your cluster is in e.g `eu-west-2`.
