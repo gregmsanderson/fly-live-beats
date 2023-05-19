@@ -447,9 +447,9 @@ CMD /app/bin/migrate;/app/bin/server
 
 Since you have changed its code, build a new image, tag it, and push it to ECR.
 
-Once pushed, click "Update service" and tick the box to force a new deployment. You can keep track in the service's "Deployments and Events" tab.
+Once pushed, click "Update service". Tick the box to force a new deployment. Scroll down and click "Update". You can keep track in the service's "Deployments and Events" tab.
 
-Now when _that_ container runs in a minute or so, it should migrate the database.
+Now when _that_ one container runs in a couple of minutes or so, it should migrate the database.
 
 If you switch to the "Logs" tab you should see when the container runs the `CMD`. You should see the database _is_ now migrated:
 
@@ -459,7 +459,7 @@ Now that's done you can remove that migrate command from the `Dockerfile` puttin
 
 ## Check the app
 
-As part of the deployment of the service, a load balancer was created. If you check your service's "Health and metrics" tab, there is a section for the "Load balancer health" that you can expand. On the right of that it shows the nmber of targets (for example `2`, if you launched two tasks) and whether they are healthy.
+As part of the deployment of the service, a load balancer was created. If you check your service's "Health and metrics" tab, there is a section for the "Load balancer health" that you can expand. On the right of that it shows the nmber of targets (currently `1`) and whether they are healthy.
 
 If a target is unhealthy, make sure the tasks (containers) are running _and_ double-cheeck that the ECS service's security group allows incoming requests on TCP port `4000` from the load balancer.
 
@@ -556,11 +556,15 @@ $ aws ecs update-service --profile if-you-need-one --region your-region --cluste
 
 That should return a large block of JSON. At the very end of that should be `"enableExecuteCommand": true`. That confirms it has indeed been enabled.
 
-However that has probably only been enabled for new tasks. It's easiest to just force a new deployment of the service to create brand new tasks. In the AWS console, click on your service and then click on the "Update service" button on the right-hand side. Tick the box at the top of that panel to force a new deployment. Scroll down and click the "Update" button.
+However that has probably only been enabled for new tasks. It's easiest to just force a new deployment of the service to create brand new tasks. In the AWS console, click on your service and then click on the "Update service" button on the right-hand side. Tick the box at the top of that panel to force a new deployment.
 
-It may take a couple of minutes for the new containers to start and then register as healthy targets in the load balancer. You can check the service's "Deployments" tab to see what it is up to.
+While here, increase the numbr of tasks value to be `2`. That means you should have a _cluster_, as each container discovers the other one.
 
-Once they are running, get the ID of one of the running tasks (from the service's "Tasks" tab) and type this command:
+Scroll down and click the "Update" button.
+
+It may take a couple of minutes for both those new containers to start and then register as healthy targets in the load balancer. You can check the service's "Deployments" tab to see what it is up to.
+
+Once they are running, get the ID of one of those running tasks (from the service's "Tasks" tab) and type this command:
 
 ```sh
 $ aws ecs execute-command --profile if-you-need-one --region your-region --cluster cluster-name-here --task the-task-id-here --interactive --command "/bin/sh"
