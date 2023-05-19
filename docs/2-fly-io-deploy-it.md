@@ -1,5 +1,7 @@
 # Deploy to Fly.io
 
+**Important:** This repo contains the modified Live Beats app (for deploying it to AWS). Since on this page I _am_ deploying to Fly.io I'll _instead_ use the code from the [original Live Beats repo](https://github.com/fly-apps/live_beats).
+
 ## Create a Fly.io account
 
 Visit [https://fly.io/](https://fly.io/) and click "Sign up".
@@ -14,7 +16,7 @@ Clicking that button takes you to the dashboard:
 
 ## CLI
 
-Let's go ahead and [install the Fly.io CLI](https://fly.io/docs/hands-on/install-flyctl/).
+If you haven't alreeady, [install the Fly.io CLI](https://fly.io/docs/hands-on/install-flyctl/).
 
 ```sh
 $ flyctl --version
@@ -23,31 +25,31 @@ flyctl v0.1.3 darwin/amd64 Commit: d42ac204 BuildDate: 2023-05-12T08:15:04Z
 
 In future you can download the latest version using `flyctl version update`.
 
-We'll now need to sign in to get a token by running: `flyctl auth login`.
+You need to sign in to get a token by running: `flyctl auth login`.
 
-That should open a new browser window. Since we are still signed in, we can connect to the account. It should say _"Your FlyCTL should be connected now"_.
+That should open a new browser window. It should say _"Your FlyCTL should be connected now"_.
 
-Before we close that window we'll add a credit card:
+Before closing that window, add a credit card:
 
 ![Dashboard](img/fly_credit_card.jpeg)
 
 There is a [free tier](https://fly.io/docs/about/pricing/) however adding that credit card is necessary to verify your identity and to prevent abuse.
 
-Now we should be able to deploy.
+Now it should be possible to deploy.
 
-**Note:** This is a new Fly.io account and so we will automatically be using Fly.io's new [V2/Machines](https://fly.io/docs/about/pricing/#apps-v2-and-machines). If you have an existing app yet to be migrated to V2, Fly.io have a [guide for that](https://fly.io/docs/apps/migrate-to-v2/).
+**Note:** This is a new Fly.io account and so I will automatically be using Fly.io's new [V2/Machines](https://fly.io/docs/about/pricing/#apps-v2-and-machines). If you have an existing app yet to be migrated to V2, Fly.io have a [guide for that](https://fly.io/docs/apps/migrate-to-v2/).
 
 ## Database
 
-We know the Live Beats app needs a Postgres database.
+The Live Beats app needs a Postgres database.
 
-We _could_ create the database at the same time as the app. However that's not what we'll be doing with AWS. So let's go ahead and [create that database](https://fly.io/docs/postgres/getting-started/create-pg-cluster/) first:
+I _could_ create the database at the same time as the app. However that's not what I'll be doing with AWS. So I'll [create a database on Fly.io](https://fly.io/docs/postgres/getting-started/create-pg-cluster/) first by running:
 
 ```sh
 $ flyctl postgres create
 ```
 
-That talks you through the options. It asks for a name, the region, and whether you want high availability (HA). Since this is just for a test we can pick the smallest size (a single node with a shared CPU). However to run your app in production we strongly recommend using those instead:
+As shown below, that talks you through the options. Since this is just for a test I'll pick the smallest size (no HA on a single node, with a shared CPU). However to run your app in production you should use HA.
 
 ```sh
 ? Choose an app name (leave blank to generate one): your-name-here
@@ -72,31 +74,27 @@ Postgres cluster its-name created
 
 It should only take a few seconds to create then a further few seconds for the healthchecks to pass.
 
-Assuming all is well you should be shown the credentials to connect to it. Make a note of those as you will only be shown them once. You could now [connect to that](https://fly.io/docs/postgres/connecting/connecting-with-flyctl/) and create the database ... however we'll let Fly create the app's database for us below.
+Assuming all is well you should be shown the credentials to connect to it. Make a note of those as you will only be shown them once. You could now [connect to that](https://fly.io/docs/postgres/connecting/connecting-with-flyctl/) and create the database yourself. However I'll let Fly.io create that in a moment.
 
 ## App
 
-**Note:** We edited the [Live Beats app](https://github.com/fly-apps/live_beats) for deploying it _outside_ of Fly.io. Since here we _are_ deploying to Fly.io you should _instead_ use the code from the [original repo](https://github.com/fly-apps/live_beats).
-
-In its `fly.toml` file update the `app` value to be one of your choice since it needs to be globally unique. The `PHX_HOST` value needs to include that name:
+In its `fly.toml` file update the `app` value to be one of your choice (it needs to be globally unique). The `PHX_HOST` value needs to include that name too
 
 ```toml
-app = "your-choice-of-name"
+app = "your-app-name"
 
 [env]
-  PHX_HOST = "your-choice-of-name.fly.dev"
+  PHX_HOST = "your-app-name.fly.dev"
 ```
 
-Also, make sure the two GitHub client variables it expects _are_ set. If not, you will [get an error](/docs/misc-any-errors.md):
+Make sure the two GitHub client variables it expects _are_ set. If not, you will [get an error](/docs/14-any-errors.md):
 
 ```sh
 export LIVE_BEATS_GITHUB_CLIENT_ID="swap-this-for-yours"
 export LIVE_BEATS_GITHUB_CLIENT_SECRET="swap-this-for-yours"
 ```
 
-Now run `flyctl launch`.
-
-When it asks if you want to deploy now, type `N` (no) since we need to do a few things before then:
+Run `flyctl launch`. When it asks if you want to deploy now, type `N` (no) since you need to do a few things before then:
 
 ```sh
 $ flyctl launch
@@ -141,15 +139,15 @@ If you need something else, post on our community forum at https://community.fly
 When you're ready to deploy, use 'fly deploy'.
 ```
 
-Great!
+Great! It's ready to deploy.
 
 ## Deploy the app
 
-We didn't deploy the app above since we first need to set some secrets. They will then be staged for deployment.
+I haven't deployed the app yet since I _first_ need to set some secrets. They will then be staged for deployment.
 
 ### Secrets
 
-We need to provide a [GitHub OAuth](https://docs.github.com/en/developers/apps/building-oauth-apps/creating-an-oauth-app) client ID and secret that it can use to authenticate a user. If you have already tried [running the app locally](/docs/1-run-locally.md) you will have already made one. However _that_ Oauth app has the app's URL set as `http://localhost:4000`. You need to make a new app in GitHub to get a _new_ client ID and secret. Visit [https://github.com/settings/applications/new](https://github.com/settings/applications/new). Set its "Homepage URL" as `https://your-app-name.fly.dev` and its "Authorization callback URL" to `https://your-app-name.fly.dev/oauth/callbacks/github` (of course replacing that name with your own).
+The app needs a [GitHub OAuth](https://docs.github.com/en/developers/apps/building-oauth-apps/creating-an-oauth-app) client ID and secret that it can use to authenticate a user. If you have already tried [running this app locally](/docs/1-run-locally.md) you will have already made one. However _that_ has the homepage URL set as `http://localhost:4000`. So you need to make a new OAuth app in GitHub to get a _new_ client ID and secret. Visit [https://github.com/settings/applications/new](https://github.com/settings/applications/new). Set its "Homepage URL" as `https://your-app-name.fly.dev` and its "Authorization callback URL" to `https://your-app-name.fly.dev/oauth/callbacks/github` (of course replacing that name with your own).
 
 The client ID will be shown on screen. Click the button to generate a new client secret to get that too.
 
@@ -163,7 +161,7 @@ You should see "Secrets are staged for the first deployment".
 
 ### Attach the database
 
-We created a database _app_ earlier. Now we need a database. We _could_ use the existing `postgres` user (whose credentials you have from earlier) to connect to the app and create a database ourselves. However Fly can [do that for us](https://fly.io/docs/postgres/managing/attach-detach/). Behind the scenes it should create a database, create a user, and set a `DATABASE_URL`. The command is: `flyctl postgres attach --app <app-name> <postgres-app-name>`. Replace these two values with your _own_ app name and Postgres app name:
+I created a Postgres database _app_ earlier. Now we need a database. I _could_ use the existing `postgres` user (whose credentials you have from earlier) to connect to the app and create a database ourselves. However Fly can [do that for me](https://fly.io/docs/postgres/managing/attach-detach/). Behind the scenes it should create a database, create a user, and set a `DATABASE_URL`. The command is: `flyctl postgres attach --app <app-name> <postgres-app-name>`. Replace these two values with your _own_ app name and Postgres app name:
 
 ```sh
 $ flyctl postgres attach --app your-app-name your-postgres-name
@@ -179,7 +177,7 @@ The following secret was added to your-app-name:
 
 Great!
 
-We can now deploy our app using `flyctl deploy`. It will build an image, create additional resources (like a volume) and run our database migration:
+I can now deploy the app using `flyctl deploy`. It will build an image, create additional resources (like a volume) and run the database migration:
 
 ```sh
 $ flyctl deploy
@@ -258,7 +256,7 @@ In production you will likely want to use larger sizes. They do cost more, natur
 
 ## Scaling globally
 
-Currently we only have one machine running for our app. We can see that by running `flyctl status`:
+Currently I only have one machine running for the app. You can see that by running `flyctl status`:
 
 ```sh
 $ flyctl status
@@ -274,15 +272,15 @@ PROCESS ID              VERSION REGION  STATE   CHECKS                  LAST UPD
 app     12345           1       lhr     started 1 total, 1 passing      2023-05-13T17:54:42Z
 ```
 
-We want to try adding more in different regions to see if they are able to communicate. It's recommended to run at _least_ two in production.
+I'll try adding more in different regions to see if they are able to communicate. It's recommended to run at _least_ two in production anyway.
 
-From this [list of regions](https://fly.io/docs/reference/regions/) we will add the US region `sea`. Normally you could run e.g `flyctl regions add sea` to change the regions the app can run in. However this Live Beats app uses a [volume](https://fly.io/docs/reference/volumes/). Volumes are local, persistent storage for machines. You need to [run a volume per machine](https://fly.io/docs/reference/volumes/). Rather than manually make that volume we can [clone the machine](https://fly.io/docs/apps/scale-count/#scale-up-with-fly-machine-clone) and Fly.io will do it for us 🙂.
+From this [list of regions](https://fly.io/docs/reference/regions/) I will add the a region in the US (`sea`). Normally you could run e.g `flyctl regions add sea` to change the regions the app can run in. However this Live Beats app uses a [volume](https://fly.io/docs/reference/volumes/). Volumes are local, persistent storage for machines. You need to [run a volume per machine](https://fly.io/docs/reference/volumes/). Rather than manually make that volume we can [clone the machine](https://fly.io/docs/apps/scale-count/#scale-up-with-fly-machine-clone) and Fly.io will do that for me 🙂.
 
 You should already have its ID from running `flyctl status` so clone that:
 
 ```sh
-$ flyctl machine clone --region sea 12345
-Cloning machine 12345 into region sea
+$ flyctl machine clone --region sea 1234567
+Cloning machine 1234567 into region sea
 Volume 'data' will start empty
 Provisioning a new machine with image registry.fly.io/your-app-name:deployment-12345...
   Machine abcde has been created...
@@ -291,11 +289,11 @@ Provisioning a new machine with image registry.fly.io/your-app-name:deployment-1
 Machine has been successfully cloned!
 ```
 
-You can confirm by running `flyctl status`. That should show _two_ machines (in our case, one in `lhr` and one in `sea`). If you run `flyctl volumes list` you should see the two volumes, and now both are attached to their respective VMs.
+You can confirm by running `flyctl status`. That should show _two_ machines (in my case, one in `lhr` and one in `sea`). If you run `flyctl volumes list` you should see the two volumes, and now both are attached to their respective VMs.
 
-Let's check that the Live Beats app has noticed the new machine. SSH in to the cloest machine by running `flyctl ssh console`.
+I'll check that the Live Beats app has noticed that new machine. i'll SSH in to the cloest machine by running `flyctl ssh console`.
 
-As Chris McCord demonstrates in [this video](https://www.youtube.com/watch?v=JrqBudJd2YM&ab_channel=ChrisMcCord) (skip to _5:30_) the app is using `libcluster`. You may have noticed that at the end of `/config/runtime.exs`:
+As Chris McCord demonstrates in [this video](https://www.youtube.com/watch?v=JrqBudJd2YM&ab_channel=ChrisMcCord) (skip to **5:30**) the app is using `libcluster`. You may have noticed that at the end of `/config/runtime.exs` in the original repo (it's different in this one):
 
 ```elixir
 config :libcluster,
@@ -313,11 +311,9 @@ topologies: [
 
 Type `/app/bin/live_beats remote` to get shell access.
 
-From there can see the region you are connected to by typing in `System.get_env("FLY_REGION")`. Fly.io provides that environment variable for you. In our case it's `lhr`.
+From there can see the region you are connected to by typing in `System.get_env("FLY_REGION")`. Fly.io provides that environment variable for you. In my case it's `lhr`.
 
-You can also type `Node.list()` to get an array of the _other_ nodes in the cluster, of the format `app-name@IPv6`. In our case we have two machines and so this array has one element. It's the IPv6 of the _other_ one. Type `Ctrl+\` and then `exit` to leave the shell.
-
-We tried with ours:
+You can also type `Node.list()` to get an array of the _other_ nodes in the cluster, of the format `app-name@IPv6`. In my case we have two machines and so this array has one element. It's the IPv6 of the _other_ one e.g:
 
 ```sh
  $ flyctl ssh console
@@ -325,17 +321,19 @@ Connecting to fdaa:2:2b0a:a7b:13e:2228:618a:2... complete
 # /app/bin/live_beats remote
 Erlang/OTP 24 [erts-12.0.1] [source] [64-bit] [smp:1:1] [ds:1:1:10] [async-threads:1] [jit]
 Interactive Elixir (1.12.0) - press Ctrl+C to exit (type h() ENTER for help)
-iex(fly-live-beats@fdaa:2:2b0a:a7b:13e:2228:2)1> System.get_env("FLY_REGION")
+iex(fly-live-beats@fdaa:2:2b0a:a7b:13e:2)1> System.get_env("FLY_REGION")
 "lhr"
-iex(fly-live-beats@fdaa:2:2b0a:a7b:13e:2228:2)2> Node.list()
-[:"fly-live-beats@fdaa:2:2b0a:a7b:bbfb:2d6c:2"]
+iex(fly-live-beats@fdaa:2:2b0a:a7b:13e:2)2> Node.list()
+[:"fly-live-beats@fdaa:2:2b0a:a7b:bbfb:2"]
 ```
+
+Type `Ctrl+\` and then `exit` to leave the shell.
 
 The cluster is working 🚀
 
 ## Custom domain
 
-We didn't do this for _this_ guide however Fly.io supports using your own domain instead of its provided `your-app-name.fly.dev`. If you would like to use one, you will need to tell Fly.io about that so that it knows which app to route those requests to. As part of that process, it issues a free SSL certificate which it will automatically renew for you.
+Fly.io supports using your own domain instead of its provided `your-app-name.fly.dev`. If you would like to use one, you will need to tell Fly.io about that so that it knows which app to route those requests to. As part of that process, it issues a free SSL certificate which it will automatically renew for you.
 
 To use one, create the DNS record. A popular choice is Cloudflare. You would click on your domain, click on DNS, and add two entries. One for IPv4 (that's called an `A` record) and one for IPv6 (that's called an `AAAA` record). You can get those two values using `flyctl ips list`:
 
@@ -348,6 +346,16 @@ v4      1.2.3.4                 public (shared)
 
 Assuming you are using Cloudflare, you would need those DNS records to be grey-cloud (non-proxied). Else they would return the wrong IP (the IP of its proxy) and would fail the certificate validaation.
 
-At this point requests to `www.your-domain.com` would go to Fly.io's network ... however it would not know what to do with them. Plus, it wouldn't have any SSL certifcate. You can sort out both of those issues by running `flyctl certs add www.your-domain.com`, of course providing your domain in its place. You can check on it by running `flyctl certs list`. Assuming your DNS records are correct, it should have been able to validate you own that custom domain and so issue a certificate for it. At that point you should be able to open that domain in your browser and have the response returned by your app.
+At this point requests to `www.your-domain.com` would go to Fly.io's network ... however it would not know what to do with them. Plus, it wouldn't have any SSL certifcate. You can sort out both of _those_ issues by running `flyctl certs add www.your-domain.com`, of course providing your domain in its place. You can check on it by running `flyctl certs list`. Assuming your DNS records are correct, it should have been able to validate you own that custom domain and so issue a certificate for it.
 
-Let's now try deploying Live Beats to AWS. First we'll need to [create an AWS account](/docs/3-aws-create-account.md).
+However ...
+
+1. You would get a WebSocket error. Why? The app needs to knoe the hostname. Recall that is done by setting the `PHX_HOST`. Make sure to update that in `fly.toml`.
+
+2. The sign in part would not work. Why? The app uses a GitHub OAuth app to sign in. It needs to know the app's hostname too. If it's set to use `https://your-app-name.fly.dev` that will need updating in the GitHub UI to use your custom domain instead.
+
+Having made those changes, run `flyctl deploy` and you should then be able to open that domain in your browser and have the response returned by your app.
+
+## AWS?
+
+I'll now see if I can deploy this same Live Beats app to AWS. First I'll need to [create an AWS account](/docs/3-aws-create-account.md).

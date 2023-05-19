@@ -8,7 +8,7 @@ The oldest compute service is EC2, exiting beta way back 2008. In fact that was 
 
 ## Which AWS compute service should I use?
 
-Even if we limit our selection to only options that [mention running a container](https://aws.amazon.com/containers/services/) there are still quite a few:
+Limiting the selection to only options that [mention running a container](https://aws.amazon.com/containers/services/) there are still quite a few:
 
 ##### ECS?
 
@@ -36,30 +36,21 @@ Even if we limit our selection to only options that [mention running a container
 
 :confused:
 
-Some services provide more abstraction than others. For an objective comparison to Fly.io we really want to limit ourselves to services that _also_ hide (at least some of) the complexity. We'd also like to avoid learning a whole new set of terms (Kubernetes and its Ingress Controllers, Services, Pods, ConfigMaps ...). Your choices may well be different. For example you may already be experienced with Kubernetes and so immediately opt for EKS (which this application could run on).
+Ideally a service which (like Fly.io) can take _in_ a `Dockerfile` and _return_ a load-balanced TLS endpoint. I'd like to avoid learning a whole new set of terms (Kubernetes and its Ingress Controllers, Services, Pods, ConfigMaps ...). Your choices may well be different. For example you may already be experienced with Kubernetes and so immediately opt for EKS (which this application should be able to run on).
 
-Ideally we'd like a service which (like Fly.io) can take _in_ a `Dockerfile` and _return_ a load-balanced TLS endpoint.
-
-Arguably _that_ would be the newest compute service [App Runner](https://aws.amazon.com/apprunner/). Like Fly.io, it provides automated deployments, load-balancing, auto-scaling, logs, custom domains and certificate management. Its usage model is also similar, billing on vCPU and memory. Behind the scenes it runs on top of ECS and Fargate however we should not need to know that.
+Arguably the closest is their newest compute service, [App Runner](https://aws.amazon.com/apprunner/). Like Fly.io, it provides automated deployments, load-balancing, auto-scaling, logs, custom domains and certificate management. Its usage model is also similar, billing on vCPU and memory.
 
 With App Runner you pay a separate price for compute (vCPU-hour) and memory (GB-hour). The smallest configuration being 0.25 vCPU and 0.5 GB. It's billed per-second, with a one-minute minimum. There is an additional small fee for enabling automatic deployments and then a per-minute fee for building. The main appeal is its ability to scale to zero when idle. The trade-off is the additional price for the convenience. AppRunner is ~60% more than ECS+Fargate for the equivalent compute power.
 
-_But_ as of May 2023 App Runner [does not support WebSockets](https://github.com/aws/apprunner-roadmap/issues/13). That's not ideal. Phoenix LiveView defaults to using WebSockets. It _can_ fall-back to long polling. That may be sufficient for _your_ LiveView app _if_ its real-time updates are simply used to show updates. We tried to modify the Live Beats application to use long polling. That _initially_ seemed to work however file uploads then don't. It [relies on WebSockets](https://fly.io/blog/livebeats/) for that too:
+_But_ as of May 2023 App Runner [does not support WebSockets](https://github.com/aws/apprunner-roadmap/issues/13). That's not ideal. Phoenix LiveView defaults to using WebSockets. It _can_ fall back to long polling. That may be sufficient for _your_ LiveView app _if_ its real-time updates are simply used to show updates. I tried to modify the Live Beats application [to use long polling](/docs/misc-changes-to-the-app.md). That _initially_ seemed to work however file uploads then were broken. Live Beats [relies on WebSockets](https://fly.io/blog/livebeats/) for that too:
 
 > ... drops a handful of MP3s into the app, we upload them concurrently over the WebSocket connection ...
 
-This particular app _also_ makes use of another Phoenix LiveView feature: clustering. It expects nodes to be able to communicate with each other. App Runner runs instances in its own VPC.
+This particular app _also_ makes use of another Phoenix LiveView feature: clustering. It expects nodes to be able to communicate with each other. App Runner runs instances in its own VPC. Presumably they can not communicate?
 
-App Runner is also available in a limited number of AWS regions. If your application is particularly sensitive to latency (perhaps more of an issue with LiveView due to its server-rendered updates than it would be for other apps) that may be something to consider. It's currently available in these regions:
+Plus (as of May 2023) App Runner [does not support EFS for persistent storage](https://github.com/aws/apprunner-roadmap/issues/14). The current Live Beats app actually deletes .mp3 files after six hours, however a production application should idealy be able to use local, persistent storage. That is possible on Fly.io, with its volumes.
 
-- Asia Pacific (Tokyo)
-- Asia Pacific (Singapore)
-- Asia Pacific (Sydney)
-- Europe (Ireland)
-- Europe (Frankfurt)
-- US East (N. Virginia)
-- US East (Ohio)
-- US West (Oregon)
+App Runner is also available in a limited number of AWS regions. If your application is particularly sensitive to latency (perhaps more of an issue with LiveView due to its server-rendered updates than it would be for other apps) that may be something to consider.
 
 What about [Lightsail](https://aws.amazon.com/lightsail/)? You can deploy a container with load-balancing, auto-scaling, logs and certificate management. Apparently it also integrates with the AWS CDN, Cloudfront. So you can deliver static files faster and with lower latency.
 
@@ -74,6 +65,6 @@ Perhaps ECS? ECS lets you run a container. Two services can provide the _capacit
 - ECS tasks run on _Fargate_ is the default option. It's now pre-selected for new ECS clusters. That is the "serverless" approach. It provides more abstraction. You only pay when the task is running. But when it _is_ running, that compute costs more.
 - ECS tasks can instead run on _EC2_. Using EC2 to provide the capacity lets you pick from a larger number of instances. It gives you greater control. Plus it's cheaper. However it is more complex to manage as you are then responsible for ensuring you have sufficient capacity for your container(s) to run.
 
-That should let us do everything we need. It supports WebSockets (using a load balancer). It is possible for containers to communicate with each other in a cluster. It supports service discovery using its new [service connect](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-connect.html). You can attach persistent storage (EFS). It has also been available for a while, having [celebrated its 5th birthday last year](https://aws.amazon.com/blogs/containers/happy-5th-birthday-aws-fargate/) and is available in our region. It is now used by the likes of Goldman Sachs and Vanguard.
+That should let us do everything we need. It supports WebSockets (using a load balancer). It is possible for containers to communicate with each other in a cluster. It supports service discovery using its new [service connect](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service-connect.html). You _can_ attach persistent storage (EFS). It has also been available for a while, having [celebrated its 5th birthday last year](https://aws.amazon.com/blogs/containers/happy-5th-birthday-aws-fargate/) and is available in our region. It is now used by the likes of Goldman Sachs and Vanguard. Apparently App Runner actually runs _on_ ECS and Fargate behind the scenes.
 
-We'll try to [deploy the app to ECS](/docs/8-deploy-to-ecs.md) and (at least initially) use Fargate to provide the capacity.
+I'll try to [deploy Live Beats to ECS](/docs/9-aws-deploy-it.md) and (at least initially) use Fargate to provide the capacity.

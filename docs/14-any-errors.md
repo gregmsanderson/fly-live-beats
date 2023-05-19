@@ -177,4 +177,4 @@ The smallest instances have a limited number of available connections. They can 
 14:02:26.007 [error] Postgrex.Protocol (#PID<0.2080.0>) failed to connect: ** (Postgrex.Error) FATAL 53300 (too_many_connections) remaining connection slots are reserved for non-replication superuser and rds_superuser connections
 ```
 
-... that will probably be why. You can force the app to use fewer by setting a plain text environment variable in your task definition called `POOL_SIZE`. Its default value is `10`. Temporarily you could try setting that as a lower number to make it open fewer connections.
+... that will probably be why. You can force the app to use fewer by setting a plain text environment variable in your task definition called `POOL_SIZE`. Its default value is `10`. You could try setting that as a lower number to make it open fewer connections.

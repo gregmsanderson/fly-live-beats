@@ -21,9 +21,9 @@ Protocol 'inet6_tcp': register/listen error: eaddrnotavail
 
 ### mix.exs
 
-In order for the nodes to communicate, there needs to be some way for them to know about each other. I tried a [variety of approaches](/docs/9-clustering.md), none worked, and so ended up using a custom `libcluster` strategy. That meant adding a dependency.
+In order for the nodes to communicate, there needs to be some way for them to know about each other. I tried a [variety of approaches](/docs/10-aws-phoenix-clustering.md), none worked, and so ended up using a custom `libcluster` strategy. That meant adding a dependency.
 
-**Note:** It is [not currently available on hex](https://github.com/pro-football-focus/libcluster_ecs/issues/1) and so needs to be fetched from its GitHub repo:
+**Note:** It is [not currently available on hex](https://github.com/pro-football-focus/libcluster_ecs/issues/1) so it needs to be fetched from its GitHub repo:
 
 ```elixir
 defp deps do
@@ -35,7 +35,7 @@ defp deps do
 
 ### rel/env.sh.eex
 
-When deployed to Fly.io the app can get its IP using the private network they provide. Locally (and on AWS) of course that is not available. The app needs to instead use `hostname -i` (there are other ways to do it: running `wget -qO- http://169.254.170.2/v2/metadata | jq -r .Containers[0].Networks[0].IPv4Addresses[0]` within a container on AWS ECS should _also_ return that same IP). So that file _now_ contains:
+When deployed to Fly.io the app can get its IP using the private network they provide. Locally (and on AWS) of course that is not available. The app needs to instead use `hostname -i` (there are other ways to do it, such as running `wget -qO- http://169.254.170.2/v2/metadata | jq -r .Containers[0].Networks[0].IPv4Addresses[0]` within a container on AWS ECS should _also_ return that same IP). That file _now_ contains:
 
 ```sh
 # modified for AWS (no fly-local-6pn here)
@@ -61,19 +61,20 @@ The `LiveBeatsWeb.Endpoint` assumes listens on IPv6. Again, assume IPv6 is not a
 ip: {0, 0, 0, 0}
 ```
 
-For serving files, the URL built for each locally-served .mp3 was simply `http://localhost/files ...`. That misses the (crucial) port. To solve that I added a new `files_port` variable and set it based on the value of `PHX_HOST`:
+For serving files, the URL built for each locally-served .mp3 was simply `http://localhost/files ...`. That misses the (crucial) port. To solve that I added new variables set based on the value of `PHX_HOST`:
 
 ```elixir
-files_port = if host == "localhost", do: 4000, else: 80
+files_port = if host == "localhost", do: 4000, else: 443
+files_scheme = if host == "localhost", do: "http", else: "https"
 ```
 
-That could then be used later on in that same file:
+Those were then used later on in that same file:
 
 ```elixir
-host: [scheme: "http", host: host, port: files_port]
+host: [scheme: files_scheme, host: host, port: files_port],
 ```
 
-_Now_ when .mp3 files are uploaded, the gnerated URL includes the correct port (the default is `4000`) and so they _do_ play. I adapted the `host` to use a variable, rather than a hard-coded string. And set IPv6 as `false`.
+_Now_ when .mp3 files are uploaded, the generated URL includes the correct port (the default is `4000`) and so they _do_ play. I adapted the `host` to use a variable, rather than a hard-coded string. And set IPv6 as `false`.
 
 Finally, `libcluster`. If you provide the following three environment variables the nodes _should_ be able to discover each other. This does result in some warning messages when running the container locally, as you'd expect!
 

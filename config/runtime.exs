@@ -57,14 +57,15 @@ if config_env() == :prod do
     secret_key_base: secret_key_base
 
   # modified for AWS (since if run same the image locally, need to serve .mp3s from http://localhost:4000, not http://localhost)
-  # (no ternary? hmm https://devdecks.io/2022-elixir-ternary-operator)
-  files_port = if host == "localhost", do: 4000, else: 80
+  # while production needs HTTPS/443 else get mixed-content error
+  files_port = if host == "localhost", do: 4000, else: 443
+  files_scheme = if host == "localhost", do: "http", else: "https"
 
   config :live_beats, :files,
     admin_usernames: ~w(chrismccord mrkurt),
     # modified for AWS (currently using ephemeral storage)
     uploads_dir: "/tmp",
-    host: [scheme: "http", host: host, port: files_port],
+    host: [scheme: files_scheme, host: host, port: files_port],
     server_ip: System.fetch_env!("LIVE_BEATS_SERVER_IP"),
     # modified for AWS (no .local)
     hostname: host,

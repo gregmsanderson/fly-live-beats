@@ -18,7 +18,7 @@ If you are happy to pay per request, there is Lambda. It doesn't support Elixir 
 
 As regards ease of use, AWS is more complicated. Arguably that is because it is more flexible. For example in Fly.io, you have a single private network per organization. All of your resources are placed within that. They can automatically talk to each other (using IPv6) without additional configuration. In a single AWS account you can have multiple VPCs. Resources in each VPC can not _automatically_ communicate with each other. You need to configure security groups for each resource. To complicate that slightly for newer users, the destination you provide is actually the _security group_ used by the other resource, rather than "it". So if you would like an ECS service to be able to connect to an RDS database, for the RDS security group you would need to allow inbound connections from the ECS service's _security group_.
 
-Assuming you are not using a custom domain for your app, an Appliication Load Balancer does provide you with a hostname (what it calls its DNS name) such as `name.region.elb.amazonaws.com`. However that does not support using port 443/HTTPS as a listener by default. Unlike on Fly.io, where its provided hostname (such as `name.fly.dev`) does. You can immediately use HTTPS (which all production applications should be). In AWS you have to provide a custom domain for your ALB to use port 443/HTTPS.
+Assuming you are not using a custom domain for your app, an Appliication Load Balancer does provide you with a hostname (what it calls its DNS name) such as `name.region.elb.amazonaws.com`. However that does not support using port 443/HTTPS as a listener by default. Unlike on Fly.io, where its provided hostname (such as `name.fly.dev`) does. You can immediately use HTTPS (which all production applications should be). In AWS you have to provide a custom domain for your ALB to use port 443/HTTPS and so also provide/generate a certificate.
 
 When provisioning services, AWS _should_ see that it needs more access that it has been given. For example when deploying an AWS service to ECS that makes use of secrets (as most applications will) those secrets need to be stored encrypted. AWS lets you do that (using Secrets Manager or Parameter Store) however its default execution role does not include permission for it to fetch those secrets. You need to [manually add the following permissions as an inline policy to the task execution role](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_execution_IAM_role.html). That's awkward.
 
@@ -32,11 +32,13 @@ It is not entirely fair to compare the database options available on Fly.io and 
 
 It is complicated to run an app globally on AWS. It has clearly separated geographic regions. You can use [geolocation routing](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy-geo.html) within its DNS service, Route 53, to make sure your users are served by an app closest to them. However that costs more as you pay for the DNS queries. On Fly.io, those are free. On AWS you would need to replicate the app in multiple regions (for example adding a load balancer in each one). Assuming you are using the most common type, an Aplication Load balancer (ALB), each one costs a minimum of ~$20 ($0.02646 per ALB-hour, assuming the eu-west-2 region, which excludes the additional LCU-hour metric) per month. With Fly.io, _their_ load balancer (the proxy) is provided for free and its anycast automatically handles global applications.
 
-In conclusion, if you are deploying the Live Beats app (or a similar Phoenix LiveView app that needs WebSockets and clustering) we would recommend using Fly.io over AWS.
+In conclusion, if you are deploying the Live Beats app (or a similar Phoenix LiveView app that needs WebSockets and clustering) I would recommend using Fly.io over AWS.
+
+If you found any errors deploing the app to Fly.io or AWS, some of [these suggestions](/docs/14-any-errors.md) may help.
 
 ## Notes
 
-For AWS we are basing pricing on the `eu-west-2` region. Fly has the same compute cost in every region but we have been using its `lhr` region.
+For AWS, I am basing pricing on the `eu-west-2` region. Fly has the same compute cost in every region but I have been using its `lhr` region.
 
 AWS pricing [assumes 730 hours in a month](https://aws.amazon.com/calculator/calculator-assumptions/).
 
