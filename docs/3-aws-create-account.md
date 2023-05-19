@@ -135,4 +135,4 @@ If you use VSCode, AWS [provide an extension](https://docs.aws.amazon.com/toolki
 
 However for this guide I will only be using the AWS console and AWS CLI.
 
-Next I'll [create a certificate](/docs/4-aws-create-a-certificate.md) for the app, using a custom domain.
+Next I'll [create a certificate](/docs/4-aws-create-certificate.md) for the app, using a custom domain.
