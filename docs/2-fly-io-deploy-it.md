@@ -350,7 +350,7 @@ At this point requests to `www.your-domain.com` would go to Fly.io's network ...
 
 However ...
 
-1. You would get a WebSocket error. Why? The app needs to knoe the hostname. Recall that is done by setting the `PHX_HOST`. Make sure to update that in `fly.toml`.
+1. You would get a WebSocket error. Why? The app needs to know its hostname. Recall that is done by setting the `PHX_HOST`. Make sure to update that in `fly.toml`.
 
 2. The sign in part would not work. Why? The app uses a GitHub OAuth app to sign in. It needs to know the app's hostname too. If it's set to use `https://your-app-name.fly.dev` that will need updating in the GitHub UI to use your custom domain instead.
 
@@ -358,4 +358,4 @@ Having made those changes, run `flyctl deploy` and you should then be able to op
 
 ## AWS?
 
-I'll now see if I can deploy this same Live Beats app to AWS. First I'll need to [create an AWS account](/docs/3-aws-create-account.md).
+I'll now see if I can deploy the Live Beats app to AWS. First I'll need to [create an AWS account](/docs/3-aws-create-account.md).
