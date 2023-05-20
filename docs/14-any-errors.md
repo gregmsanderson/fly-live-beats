@@ -178,3 +178,13 @@ The smallest instances have a limited number of available connections. They can 
 ```
 
 ... that will probably be why. You can force the app to use fewer by setting a plain text environment variable in your task definition called `POOL_SIZE`. Its default value is `10`. You could try setting that as a lower number to make it open fewer connections.
+
+##### Unable to pull secrets
+
+If you click on a task ID and see this:
+
+```
+ResourceInitializationError: unable to pull secrets or registry auth: execution resource retrieval failed: unable to retrieve secrets from ssm: service call has been retried 5 time(s):
+```
+
+It is _likely_ because the subnet the task is being run in has no route to the internet. Check it has an IP assigned and that the route table has a route to an IGW (Internet Gateway). If there is no route to the Internet, logs may be empty. That is generally the first thing to check.

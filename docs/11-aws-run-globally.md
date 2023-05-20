@@ -4,6 +4,8 @@ AWS is constructed around distinct geographic regions. That may be more suitable
 
 In my case I'm interested in seeing how I could replicate what I set up on Fly.io earlier. If you recall I had the database and initial compute set up in the UK, then added an additional vm on the west coast of the US.
 
+**Note:** Despite the apps sharing a database, the nodes will be in different AWS VPCs. There will be _two_ ECS clusters. The nodes in Europe don't know about (so won't connect to) the ones in the US. It may be possible to change the srvice discovery to allow them to, however not with my _current_ `libcluster` strategy (which relies on the ECS cluster reporting the nodes within it). That is a definite advantage that Fly.io has over AWS when it comes to running Phoenix Liveview.
+
 So the first step on AWS will be to change my region (from the top-right) to be _another_ one. I'll use US West (Oregon):
 
 ![AWS change region](img/aws_global_region_change.jpeg)
@@ -210,8 +212,62 @@ In terms of pricing there is a small cost to add a hosted zone, and you then pay
 
 Another way to route users is using the [AWS Global Accelerator](https://aws.amazon.com/blogs/networking-and-content-delivery/achieve-up-to-60-better-performance-for-internet-traffic-with-aws-global-accelerator/). That provides a static anycast IP (like how Fly.io does). You can then tell it your endpoints (in my case that is a load balancer in the UK, and another in the US) and it will route a user to the closest one. The appeal of _this_ approach is the request should enter the AWS network at the closest point to the user (the AWS edge) then travel over the fast, internal AWS network to the service. That should result in a faster response.
 
-The HTTPS connection will still be terminated by the load balancer and so you still privide the SSL certificate there.
+AWS have set up a page where you can [see how much of a difference it makes](https://speedtest.globalaccelerator.aws/#/). In my case, most downloads were 30-40% faster when using Global Accelerator. For example I've been working with `us-west-2` so that is a good test:
 
-In terms of pricing there is a fixed hourly cost to run the service, plus an additional cost per GB of data it handles.
+![GA speed test](img/aws_ga_speed_test.jpeg)
+
+**Note:** The HTTPS connection will still be terminated by the load balancer and so you still privide the SSL certificate there.
+
+In terms of pricing there is a fixed hourly cost to run the service _plus_ an additional cost per GB of data it handles.
 
 Since I have my DNS set up with an external provider (Cloudflare), I'm going to try adding the global accelerator to my application to see how it works.
+
+In my original region of `eu-west-2` I'll search for "Global Accelerator". Click that button:
+
+![GA speed test](img/aws_ga_start.jpeg)
+
+Give it a name, choose a type (I'll stick with the standard one), and since I've only been using IPv4 I'll stick with that default.
+
+Click "Next".
+
+I only need a single listener, on HTTPS/443. Since this will act as a global load balancer, receiving the connections:
+
+![GA 443](img/aws_ga_listener.jpeg)
+
+Click "Next".
+
+The endpoint groups decide where the accelerator directs those requests to. First I'll pick `eu-west-2`. I don't need to override any ports, so I'll click the button to add another endpoint group. For that, I'll pick `us-west-2` (where my other load balancer is).
+
+Click "Next".
+
+The final step is to tell it the endpoints to route to. I have already created a load balancer in each region, so I just need to click "Add endpoint", then choose that from its respective dropdown menu that appears when I select "ALB":
+
+![GA endpoint](img/aws_ga_endpoint.jpeg)
+
+Click "Create accelerator"
+
+Its status will initially be "In progress". In my case it took about 10 minutes to move to "Deployed".
+
+You will see each accelerator has two IPv4 _and_ a DNS name. According [to the AWS docs](https://docs.aws.amazon.com/global-accelerator/latest/dg/dns-addressing-custom-domains.mapping-your-custom-domain.html) you can use _either_ to route traffic to it (so an `A` record or a `CNAME` record).
+
+I'll try using its DNS hostname.
+
+In my DNS `www.your-domain.com` is still pointed at the ALB in `eu-west-2` (I've then got that ALB hostname as a backup to switch the `CNAME` back to in case there is any issue with the accelerator).
+
+I'll edit that record so that `www.your-domain.com` _now_ points at the DNS name shown for the Global Accelerator (for example `123456789..awsglobalaccelerator.com`).
+
+It may take a minute for the DNS to propagate.
+
+If you now check the app, it should work. You should not get any WebSocket error _and_ HTTPS works (because the TCP connction is terminated at the AWS Edge but the TLS termination is handled by the load balancer):
+
+![GA works](img/aws_ga_works.jpeg)
+
+It works! 🚀
+
+To check requests are being routed to the nearest location, I requestd the URL using [https://tools.pingdom.com/](https://tools.pingdom.com/). So that I could see which request it was, I put in a made-up path which I could then easily look for in the logs e.g `https://www.your-domain.com/test-from-pingdom`.
+
+Sure enough, when requested from the US West coast, the "logs" tab for the app running in `us-west-2` showed that request being handled _there_.
+
+```
+request_id=F2D-PFyPZbjMVLcAADci [info] GET /test-from-pingdom
+```
