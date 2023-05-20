@@ -1,10 +1,10 @@
 # Run it globally on AWS
 
-AWS is constructed around distinct geographic regions. That may be more suitable for some applications, such as those with strict compliance requirements about where its data can reside.
+AWS is constructed around distinct geographic regions. That may be more suitable for some applications, such as those with strict compliance requirements about where its data can reside. I'm interested in seeing if/how I could replicate what I set up on Fly.io earlier.
 
-In my case I'm interested in seeing how I could replicate what I set up on Fly.io earlier. If you recall I had the database and initial compute set up in the UK, then added an additional vm on the west coast of the US.
+The **TL;DR**: No. Ii did get it working, however this approach results in _multiple_ ECS clusters. The nodes will be in different AWS VPCs. The ones in Europe don't know about (so won't connect to) the ones in the US. It _may_ be possible to change the service discovery to allow them to ... however not with my _current_ `libcluster` strategy (which relies on each ECS cluster reporting the nodes within it). That is a definite advantage that Fly.io has over AWS when it comes to running Phoenix Liveview _if_ you are using clustering. Your app may not be.
 
-**Note:** Despite the apps sharing a database, the nodes will be in different AWS VPCs. There will be _two_ ECS clusters. The nodes in Europe don't know about (so won't connect to) the ones in the US. It may be possible to change the srvice discovery to allow them to, however not with my _current_ `libcluster` strategy (which relies on the ECS cluster reporting the nodes within it). That is a definite advantage that Fly.io has over AWS when it comes to running Phoenix Liveview.
+If you recall I had the database and initial compute set up in the UK, then added an additional vm on the west coast of the US.
 
 So the first step on AWS will be to change my region (from the top-right) to be _another_ one. I'll use US West (Oregon):
 
