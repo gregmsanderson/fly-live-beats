@@ -44,22 +44,24 @@ For the network type, I'll leave the default. IPv4.
 
 Next, [the VPC](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_VPC.Scenarios.html). I'm going to use the default VPC.
 
-Next, the subnet. I'll use the default subnet group. The default AWS VPC includes three _public_ subnets. However it's best practice to put a RDS database in a _private_ subnet. What is the difference?
+Next, the subnet. I'll use the default subnet group. The default AWS VPC includes three _public_ subnets. If you have created your own VPC, I believe by default _new_ ones have two public subnets and two private subnets.
+
+It's best practice to put a RDS database in a _private_ subnet. What is the difference?
 
 - A _public_ subnet is associated with a route table that _has_ a route to an Internet gateway.
 - A _private_ subnet is associated with a route table that _does not_ have a route to an Internet gateway.
 
-The default AWS VPC's main [route table](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Route_Tables.html) _has_ a route to an Internet gateway, which is why the initial three subnets are _public_.
+The default AWS VPC's [route table](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Route_Tables.html) has a route to an Internet gateway, which is why its initial three subnets are _public_.
 
-To create a new _private_ subnet you would need to create a route table that does not, then associate that with a new subnet.
+To create a new subnet that is _private_ you would need to create a route table that does _not_, then associate that route table with a new subnet.
 
-I know my database is empty _and_ this is just a demo app. I also want to demonstrate connecting to a database from my local machine later on. So _I_ will put _this_ RDS instance in a public subnet and will say "yes" to public access in a moment.
+I know my database is empty _and_ this is just a demo. For simplicity I also want to connect to it directly from my local machine later on. So _I_ will put _this_ RDS instance in a public subnet.
 
-If you are also just trying it out and have also opted for a public subnet, next decide whether to allow public access. Again, _ideally_ you want to pick "no". But saying "yes" does not directly open it up to the whole world. That would be very bad. Instead it determines whether a public IP is added. _Who_ can access it is controlled within its security group. That is a virtual firewall. In that security group you can allow access from e.g only your IP.
+If you are also just trying it and also opted for a public subnet, next decide whether to allow public access. That option determines whether a public IP is added. Access is still controlled within its security group (a virtual firewall). In that security group you can limit access.
 
-On the other hand if you have opted for a private subnet and want to connect to it from your local machine, you can't (directly). One option is using a bastion host (like an EC2 instance that _is_ inside the same VPC, since that _can_ connect to it). That's outside the scope of this guide.
+On the other hand if you have opted to put it in a private subnet, you can't (directly) connect to it from your local machine. One option is using a bastion host (like an EC2 instance that _is_ inside the same VPC, since that _can_ connect to it). That's outside the scope of this guide.
 
-Next, choose the option to create a _new_ security group (rather than use the default one). That's important. It makes it _much_ easier to connect other applications to this database as you can then select this RDS security group by name rather than have to remember what a "default" one is being used by:
+Next, choose the option to create a _new_ security group (rather than use the default one). That's important. It makes it _much_ easier to connect other applications in the VPC to this database as you can then select this RDS security group by name/ID rather than have to remember what the "default" one is being used by:
 
 ![RDS security group](img/aws_rds_security_group.jpeg)
 
