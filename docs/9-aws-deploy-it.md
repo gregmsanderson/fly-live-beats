@@ -226,7 +226,7 @@ Value: The _name_ of your cluster e.g `my-ecs-cluster`.
 Key: `AWS_ECS_SERVICE_ARN`
 Value: The full _ARN_ of your service, starting `arnaws:ecs ...`. You can get that from the console.
 
-If you want to provide a healthcheck or specify any limits, you can. I won't here.
+If you want to provide a health check or specify any limits, you can. I won't here.
 
 Click "Next" to proceed on to step two.
 
@@ -248,7 +248,7 @@ Each container gets at least 21 GB of ephemeral storage, so that's plenty.
 
 > Bind mounts are tied to the lifecycle of the container that uses them. After all of the containers that use a bind mount are stopped, such as when a task is stopped, the data is removed.
 
-For persistent storage you would pick "EFS" as the volume type, then add the rest of the details it asks for to configure it. EFS provides peristent storage.
+For persistent storage you would pick "EFS" as the volume type, then add the rest of the details it asks for to configure it. EFS provides persistent storage.
 
 I'll leave logging enabled. That goes to AWS Cloudwatch. It should show you the name of your log (for example `/ecs/your-name`). That's very handy if there are any issues.
 
@@ -256,7 +256,7 @@ Click "Next" to proceed to the final step.
 
 Scroll down to review all the values you have entered to check they look ok. All good? Click "Create".
 
-In a few seconds you should see the task definition has been created. If you need to create a new one, check it and you should see a dropdown/button to create a new revision with the exisitng values pre-entered. They are versioned and so it is clear which definition you are using.
+In a few seconds you should see the task definition has been created. If you need to create a new one, check it and you should see a dropdown/button to create a new revision with the existing values pre-entered. They are versioned and so it is clear which definition you are using.
 
 AWS now knows _what_ to run:
 
@@ -268,7 +268,7 @@ A service handles _running_ that task definition. That's next.
 
 Start by choosing your cluster from the list. I only have one, so that's easy!
 
-You need to choose what will provide the capacity for your containers to run on. As mentioned previously you can use EC2 or Fargate. The appeal of Fargate over EC2 is there is no need to set up or maintain the OS, or plan capacity. Fargate will launch the exact amount of capacty needed:
+You need to choose what will provide the capacity for your containers to run on. As mentioned previously you can use EC2 or Fargate. The appeal of Fargate over EC2 is there is no need to set up or maintain the OS, or plan capacity. Fargate will launch the exact amount of capacity needed:
 
 ![ECS service](img/aws_ecs_create_service_1.jpeg)
 
@@ -328,7 +328,7 @@ It worked!
 
 ## Security groups
 
-Before starting any tasks (containers) running, next, configure access.
+Before starting any tasks (containers) running, I'll configure access to them.
 
 ### Access to the load balancer
 
@@ -438,7 +438,7 @@ The problem is that while it is now possible to execute a command in a Fargate c
 
 For now the solution appears (?) to be to run the migration in the `Dockerfile`. That's not _ideal_ however it should work and at least get a task up and running.
 
-Change the last line in `Dockerfile` to be (tmporarily):
+Change the last line in `Dockerfile` to be (temporarily):
 
 ```sh
 # temporary (to get ECS up and running)
@@ -459,13 +459,13 @@ Now that's done you can remove that migrate command from the `Dockerfile` puttin
 
 ## Check the app
 
-As part of the deployment of the service, a load balancer was created. If you check your service's "Health and metrics" tab, there is a section for the "Load balancer health" that you can expand. On the right of that it shows the nmber of targets (currently `1`) and whether they are healthy.
+As part of the deployment of the service, a load balancer was created. If you check your service's "Health and metrics" tab, there is a section for the "Load balancer health" that you can expand. On the right of that it shows the number of targets (currently `1`) and whether they are healthy.
 
-If a target is unhealthy, make sure the tasks (containers) are running _and_ double-cheeck that the ECS service's security group allows incoming requests on TCP port `4000` from the load balancer.
+If a target is unhealthy, make sure the tasks (containers) are running _and_ double-check that the ECS service's security group allows incoming requests on TCP port `4000` from the load balancer.
 
-You may also need to check the load balancer's healthcheck. I set the healthcheck to request the `/signin` path, on port `4000`, with 2 retries, and a timeout of 2 seconds. That passes:
+You may also need to check the load balancer's health check. I set it to request the `/signin` path, on port `4000`, with 2 retries, and a timeout of 2 seconds. That passes:
 
-![ALB healthcheck](img/alb_healthcheck_passes.jpeg)
+![ALB health check](img/alb_healthcheck_passes.jpeg)
 
 If all is well, click the "View load balancer" button. Within that large "Details" panel is a DNS Name for it. It should look something like `name-alb-12345.eu-west-2.elb.amazonaws.com`. You'll need that in a moment.
 
@@ -507,7 +507,7 @@ When idle the app should use minimal resources. Even on the smallest type (0.25 
 
 When it _is_ in use you will need to monitor its metrics so see what resource should be scaled. For Fargate containers, you can scale the vCPU and RAM (partly) independently and so it may be you need more.
 
-The limit you are _probably_ going to hit first (if you started with a very small RDS database instance class) is the database connections. You may need a larger size (a larger RDS instance means more connctions are supported).
+The limit you are _probably_ going to hit first (if you started with a very small RDS database instance class) is the database connections. You may need a larger size (a larger RDS instance means more connections are supported).
 
 ## SSH in to a container
 
@@ -526,7 +526,7 @@ As you can see in [its prerequisites](https://docs.aws.amazon.com/AmazonECS/late
 
 Next you need you add the required permissions.
 
-For reference they are shown below **however** you may recall seeing these alrady. That's because I knew they would be needed them when creating the task's role earlier on. So your policy (the one attached to `ecs_task_role`) should _already_ have this statement. You don't need to do anything further to edit that.
+For reference they are shown below **however** you may recall seeing these already. That's because I knew they would be needed them when creating the task's role earlier on. So your policy (the one attached to `ecs_task_role`) should _already_ have this statement. You don't need to do anything further to edit that.
 
 ```json
 {
@@ -558,7 +558,7 @@ That should return a large block of JSON. At the very end of that should be `"en
 
 However that has probably only been enabled for new tasks. It's easiest to just force a new deployment of the service to create brand new tasks. In the AWS console, click on your service and then click on the "Update service" button on the right-hand side. Tick the box at the top of that panel to force a new deployment.
 
-While here, increase the numbr of tasks value to be `2`. That means you should have a _cluster_, as each container discovers the other one.
+While here, increase the number of tasks value to be `2`. That means you should have a _cluster_, as each container discovers the other one.
 
 Scroll down and click the "Update" button.
 

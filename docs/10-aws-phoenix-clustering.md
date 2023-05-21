@@ -8,7 +8,7 @@ The **TL;DR**: I added this to the dependencies in `mix.exs`, made sure it is co
 
 ## Does it need any config?
 
-Yes. The `libcluster_ecs` needs to know your AWS region, ECS cluser and ECS service. In `config/runtime.exs` I referenced environment variables for those:
+Yes. The `libcluster_ecs` needs to know your AWS region, ECS cluster and ECS service. In `config/runtime.exs` I referenced environment variables for those:
 
 1. `AWS_ECS_CLUSTER_REGION`. For example `eu-west-2`
 
@@ -60,7 +60,7 @@ I could not get it to work though.
 
 It _appears_ to create an endpoint which can then be used _across_ services. However I want containers to communicate within the _same_ service. It should be possible to use it for that _too_ (like `cluster.namespace`). Apparently it doesn't use DNS and so should be much better than service discovery using DNS. At least according to [this answer](https://stackoverflow.com/questions/76000775/aws-ecs-service-connect-versus-service-discovery).
 
-It _should_ be possible for `libcluster` to use it with `Cluster.Strategy.DNSPoll`. However when I tried, it wouldn't. Perhaps it was because of my security group settings. I did get it running (with side-car containers clearly being added to my tasks). They added a load of entries to the logs. But each `Node.list()` was `[]`.
+It _should_ be possible for `libcluster` to use `Cluster.Strategy.DNSPoll`. However when I tried, it wouldn't. Perhaps it was because of my security group settings? Perhaps I was not using the correct namespace? Perhaps DNS resolution was not working? I did get it running (a side-car container was being added to each task which added a load of entries to the logs). However each call to `Node.list()` returned `[]`.
 
 ## Service discovery?
 
@@ -116,9 +116,7 @@ If you take a look at `https://fly.io/docs/elixir/the-basics/clustering/#the-coo
 
 Hence during the guide I added an environment variable called `RELEASE_COOKIE` whose value is the secret stored at `staging/fly-live-beats/release-cookie`.
 
-That solves _that_ problem.
-
-Confirming that, the logs now have:
+Confirming that, the logs _now_ have:
 
 ```
 [info] [libcluster:ecs] connected to :"live-beats@172.31.33.10
@@ -126,4 +124,4 @@ Confirming that, the logs now have:
 
 You can confirm by using "ECS Exec" to get shell access to your containers, as [previously documented](/docs/9-aws-deploy-it.md).
 
-Is it possible [run it globally](/docs/11-aws-run-globally.md) on AWS, like it is on Fly.io?
+Is it possible [run it globally](/docs/11-aws-run-globally.md) on AWS, like it is on Fly.io 🤔?

@@ -48,7 +48,7 @@ _But_ as of May 2023 App Runner [does not support WebSockets](https://github.com
 
 This particular app _also_ makes use of another Phoenix LiveView feature: clustering. It expects nodes to be able to communicate with each other. App Runner runs instances in its own VPC. Presumably they can not communicate?
 
-Plus (as of May 2023) App Runner [does not support EFS for persistent storage](https://github.com/aws/apprunner-roadmap/issues/14). The current Live Beats app actually deletes .mp3 files after six hours, however a production application should idealy be able to use local, persistent storage. That is possible on Fly.io, with its volumes.
+Plus (as of May 2023) App Runner [does not support EFS for persistent storage](https://github.com/aws/apprunner-roadmap/issues/14). The current Live Beats app actually deletes .mp3 files after six hours, however a production application should ideally be able to use local, persistent storage. That is possible on Fly.io, with its volumes.
 
 App Runner is also available in a limited number of AWS regions. If your application is particularly sensitive to latency (perhaps more of an issue with LiveView due to its server-rendered updates than it would be for other apps) that may be something to consider.
 

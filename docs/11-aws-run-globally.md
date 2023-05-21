@@ -1,12 +1,12 @@
 # Run it globally on AWS
 
-AWS is constructed around distinct geographic regions. That may be more suitable for some applications, such as those with strict compliance requirements about where its data can reside. I'm interested in seeing if/how I could replicate what I set up on Fly.io earlier.
+AWS is constructed around distinct geographic regions. That may be more suitable for some applications, such as those with strict compliance requirements about where its data can reside. I'm interested in seeing if/how I could replicate what I set up on Fly.io earlier. If you recall I had the database and initial compute set up in the UK, then added an additional vm on the west coast of the US.
 
-The **TL;DR**: No. Ii did get it working, however this approach results in _multiple_ ECS clusters. The nodes will be in different AWS VPCs. The ones in Europe don't know about (so won't connect to) the ones in the US. It _may_ be possible to change the service discovery to allow them to ... however not with my _current_ `libcluster` strategy (which relies on each ECS cluster reporting the nodes within it). That is a definite advantage that Fly.io has over AWS when it comes to running Phoenix Liveview _if_ you are using clustering. Your app may not be.
+The **TL;DR**: No. I did get the Live Beats app running in two separate regions and configured requests to load-balance between them. However an ECS cluster only exists in a single AWS region. In theory, the nodes in Europe could (via VPC peering) connect to ones in the US. However they don't _know_ about them. My current [clustering strategy](/docs/10-aws-phoenix-clustering.md) relies on the ECS cluster reporting the nodes within it. Service discovery/connect would need to be used. What namespace would that use though 🤔? That is a definite advantage that Fly.io has over AWS when it comes to running Phoenix LiveView: using clustering. Your app may not be.
 
-If you recall I had the database and initial compute set up in the UK, then added an additional vm on the west coast of the US.
+## Which region?
 
-So the first step on AWS will be to change my region (from the top-right) to be _another_ one. I'll use US West (Oregon):
+I'll change my region (from the top-right) to be _another_ one. I picked use US West (Oregon):
 
 ![AWS change region](img/aws_global_region_change.jpeg)
 
@@ -78,17 +78,17 @@ Click the "Edit DNS settings" button and toggle the option to enabled.
 
 ![DNS enabled](img/aws_vpc_dns_enabled.jpeg)
 
-When you first accepted the peering connction, it probably said to add a route to the (now) peered VPC. So click on "Route tables" to do that now.
+When you first accepted the peering connection, it probably said to add a route to the (now) peered VPC. So click on "Route tables" to do that now.
 
 In `eu-west-2`, in its "route tables", edit the existing public routes to add a _new_ route so that traffic with destination `10.0.0.0/22` (which is my CIDR) is sent to a target of (pick "Peering Connection") the `us-west-2` VPC. Click "save changes".
 
-In `us-west-2`, in its "route tables", edit the new VPC's single public routes to add a \_new \_route so that traffic with destination `172.31.0.0/16` (which is my CIDR) is sent to a target of (pick "Peering Connection") the `eu-west-2` VPC. Click "save changes".
+In `us-west-2`, in its "route tables", edit the new VPC's single public routes to add a _new_ route so that traffic with destination `172.31.0.0/16` (which is my CIDR) is sent to a target of (pick "Peering Connection") the `eu-west-2` VPC. Click "save changes".
 
-Now traffic should be routed between them, privately, and hostnames should be resolved to their private IPs.
+Now traffic should be routed between them, privately, and host names should be resolved to their private IPs.
 
 **Note:** Public subnets need a route to an IGW (Internet Gateway). If not e.g ECS won't be able to fetch the secrets and the task will repeatedly fail to start because it needs those secrets.
 
-By default a _new_ public subnet _won't_ have a public IPv4 address associated with it. As a reesult, fetching secrets may _also_ fail. In which case your tasks will repeatedly fail to launch. I needed to select each of my public subnets in my new VPC (in `us-west-2`), click "Actions", then "Edit subnet settings", and check that box for each:
+By default a _new_ public subnet _won't_ have a public IPv4 address associated with it. As a result, fetching secrets may _also_ fail. In which case your tasks will repeatedly fail to launch. I needed to select each of my public subnets in my new VPC (in `us-west-2`), click "Actions", then "Edit subnet settings", and check that box for each:
 
 ![VPC public IP](img/aws_vpc_subnet_ip.jpeg)
 
@@ -112,7 +112,7 @@ The cluster is created:
 
 As before, next I'll go to "Task definitions" and create a new task definition to tell my service _what_ it will be running. Click the orange button in the top-right to create a new one.
 
-Give it a name, then scroll down to specifying the first container. There must be at least one, so it is essential. First it asks for the image details. Give it a name. I already have an image, in ECR in the UK. So I'll put that in here to avoid having to re-build, tag and push it to \_both_regions each time I make a change:
+Give it a name, then scroll down to specifying the first container. There must be at least one, so it is essential. First it asks for the image details. Give it a name. I already have an image, in ECR in the UK. So I'll put that in here to avoid having to re-build, tag and push it to _both_ regions each time I make a change:
 
 ![ECS re-use image](img/ecs_re_use_image.jpeg)
 
@@ -134,7 +134,7 @@ Click "Next"
 
 Review the details and click "Create". That should only take a moment.
 
-Now you need to create a service. Click on your cluster's namee. The default tab is the "Services" one. On the right is a "Create" button. Click that.
+Now you need to create a service. Click on your cluster's name. The default tab is the "Services" one. On the right is a "Create" button. Click that.
 
 As before, I'll switch over the compute option radio button to use "Launch type" as Fargate.
 
@@ -158,7 +158,7 @@ Give it a name e.g `fly-live-beats-alb`.
 
 As before, you need to create a new listener. Enter `443` as the port and choose `HTTPS` for the protocol. That will ask you to pick a certificate from ACM. You should be able to choose the one you previously verified (above) in _this_ region.
 
-Create a new target group, e.g `fly-live-beats-ecs-target`. For the healthcheck path, I'll use `/signin`.
+Create a new target group, e.g `fly-live-beats-ecs-target`. For the health check path, I'll use `/signin`.
 
 Click "Create". That may take a few minutes to deploy.
 
@@ -170,7 +170,7 @@ You should then see it has deployed. At this point no tasks are running since I'
 
 I'll need to configure the security groups to permit access both within the region and now _also_ cross-region (my database remains in the UK, in a separate VPC).
 
-First I'll set up the security groups as I did in the previous region. I'll create a new one for the ALB (making sure to create it in my new VPC's ID). Once done, I'll then allow commnication from that to the ECS service and for containers to commnicate within the service (allowing all requests from the new VPC's CIDR). You can see the original guide.
+First I'll set up the security groups as I did in the previous region. I'll create a new one for the ALB (making sure to create it in my new VPC's ID). Once done, I'll then allow communication from that to the ECS service and for containers to communicate within the service (allowing all requests from the new VPC's CIDR). You can see the original guide.
 
 At this point the ECS should work within US West. However it would not be able to connect to the RDS database. That is in the UK. I can't simply allow an incoming connection from the US ECS security group in the UK RDS security group ... because _it_ does not know it exists. If you try that (adding the ID of a security group from another AWS region) you would see:
 
@@ -180,7 +180,7 @@ I need to add an inbound rule to the RDS's security group to allow requests on p
 
 ## Deploy
 
-Having set up the networking, I should now be able to get a container running. As before, I'll do that by going into "ECS", clicking on my cluster, then on my service, and then on the "Update service" button. I'll scroll down and start cautiously. I'll increase the number of "Desired tasks" to `1` (previously it was `0`). I'll then scroll down, click "Update", and that will trigger a deploymnt. I'll keep an eye on that in the service's "Deployments" tab and check the "Logs" tab for any issues.
+Having set up the networking, I should now be able to get a container running. As before, I'll do that by going into "ECS", clicking on my cluster, then on my service, and then on the "Update service" button. I'll scroll down and start cautiously. I'll increase the number of "Desired tasks" to `1` (previously it was `0`). I'll then scroll down, click "Update", and that will trigger a deployment. I'll keep an eye on that in the service's "Deployments" tab and check the "Logs" tab for any issues.
 
 If you see _this_ in the service's "Logs" tab, it can't have been able to connect:
 
@@ -190,7 +190,7 @@ If you see _this_ in the service's "Logs" tab, it can't have been able to connec
 
 If all is well (it shows the service has reached a steady state, the number of targets behind the load balancer is `1` and there are no issues in the "Logs") you might like to then go ahead and repeat that, clicking "Update service" again, but this time increasing the number of desired tasks to `2`.
 
-Of course currently your actual custom domain (such as `www.your-domain.com`) is still pointed at the original ALB, in my case in `eu-west-2`. To see if the app in `us-west-2` is rsponding you would need to use its ALB's hostname. For example `app-name-alb-123456.us-west-2.elb.amazonaws.com`.
+Of course currently your actual custom domain (such as `www.your-domain.com`) is still pointed at the original ALB, in my case in `eu-west-2`. To see if the app in `us-west-2` is responding you would need to use its ALB's hostname. For example `app-name-alb-123456.us-west-2.elb.amazonaws.com`.
 
 **Note:** As shown you _will_ get a WebSocket error (because `PXH_HOST` does not match that hostname) _and_ also an SSL error (because ALB does not support HTTPS without a custom domain, and you are not using that so the certificate does not match) but that's fine for now. Both will be solved when the custom domain is pointed at a global routing/load-balancing service:
 
@@ -216,7 +216,7 @@ AWS have set up a page where you can [see how much of a difference it makes](htt
 
 ![GA speed test](img/aws_ga_speed_test.jpeg)
 
-**Note:** The HTTPS connection will still be terminated by the load balancer and so you still privide the SSL certificate there.
+**Note:** The HTTPS connection will still be terminated by the load balancer and so you still provide the SSL certificate there.
 
 In terms of pricing there is a fixed hourly cost to run the service _plus_ an additional cost per GB of data it handles.
 
@@ -258,16 +258,18 @@ I'll edit that record so that `www.your-domain.com` _now_ points at the DNS name
 
 It may take a minute for the DNS to propagate.
 
-If you now check the app, it should work. You should not get any WebSocket error _and_ HTTPS works (because the TCP connction is terminated at the AWS Edge but the TLS termination is handled by the load balancer):
+If you now check the app, it should work. You should not get any WebSocket error _and_ HTTPS works (because the TCP connection is terminated at the AWS Edge but the TLS termination is handled by the load balancer):
 
 ![GA works](img/aws_ga_works.jpeg)
 
 It works! 🚀
 
-To check requests are being routed to the nearest location, I requestd the URL using [https://tools.pingdom.com/](https://tools.pingdom.com/). So that I could see which request it was, I put in a made-up path which I could then easily look for in the logs e.g `https://www.your-domain.com/test-from-pingdom`.
+To check requests are being routed to the nearest location, I requested the URL using [https://tools.pingdom.com/](https://tools.pingdom.com/). So that I could see which request it was, I put in a made-up path which I could then easily look for in the logs e.g `https://www.your-domain.com/test-from-pingdom`.
 
 Sure enough, when requested from the US West coast, the "logs" tab for the app running in `us-west-2` showed that request being handled _there_.
 
 ```
 request_id=F2D-PFyPZbjMVLcAADci [info] GET /test-from-pingdom
 ```
+
+I'll now take a look at how [pricing compares](/docs/12-compare-pricing.md) between Fly.io and AWS.

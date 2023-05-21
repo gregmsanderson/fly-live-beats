@@ -1,6 +1,6 @@
 # Fly Live Beats
 
-Amazon Web Services (AWS) is the largest cloud provider in the world, with around a [third of the market share](https://www.srgresearch.com/articles/cloud-market-ends-2020-high-while-microsoft-continues-gain-ground-amazon). It dominates the market for running a container in the cloud. An estimaated [80 percent of cloud-hosted containers run on AWS](https://nucleusresearch.com/research/single/guidebook-containers-and-kubernetes-on-aws/). So it made sense to start there.
+Amazon Web Services (AWS) is the largest cloud provider in the world, with around a [third of the market share](https://www.srgresearch.com/articles/cloud-market-ends-2020-high-while-microsoft-continues-gain-ground-amazon). It dominates the market for running a container in the cloud. An estimated [80 percent of cloud-hosted containers run on AWS](https://nucleusresearch.com/research/single/guidebook-containers-and-kubernetes-on-aws/). So it made sense to start there.
 
 I tried deploying the same app to both Fly.io and AWS to compare the experience.
 

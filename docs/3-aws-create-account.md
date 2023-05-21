@@ -109,7 +109,7 @@ We are going to use the key for the CLI so select that option:
 
 ![IAM access key for CLI](img/aws_iam_select_cli.jpeg)
 
-It's _better_ if you can use short-lived credentials. As it says, _ideally_ use IAM Identity Center in conjunction with the AWS CLI v2. Your organisation may already be doing that in conjunction with an identity provider. I'll proceed to create a new key.
+It's _better_ if you can use short-lived credentials. As it says, _ideally_ use IAM Identity Center in conjunction with the AWS CLI v2. Your organization may already be doing that in conjunction with an identity provider. I'll proceed to create a new key.
 
 Add a description for the key. That is a good idea to remind you of what it was used for (to know the impact of rotating/deleting it in future):
 
@@ -133,6 +133,6 @@ If you use VSCode, AWS [provide an extension](https://docs.aws.amazon.com/toolki
 
 ![AWS toolkit](img/aws_toolkit_install.jpeg)
 
-However for this guide I will only be using the AWS console and AWS CLI.
+However for this guide I will be using the AWS console and AWS CLI.
 
 Next I'll [create a certificate](/docs/4-aws-create-certificate.md) for the app, using a custom domain.

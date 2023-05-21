@@ -16,7 +16,7 @@ Clicking that button takes you to the dashboard:
 
 ## CLI
 
-If you haven't alreeady, [install the Fly.io CLI](https://fly.io/docs/hands-on/install-flyctl/).
+If you haven't already, [install the Fly.io CLI](https://fly.io/docs/hands-on/install-flyctl/).
 
 ```sh
 $ flyctl --version
@@ -72,7 +72,7 @@ Machine 1234567 is created
 Postgres cluster its-name created
 ```
 
-It should only take a few seconds to create then a further few seconds for the healthchecks to pass.
+It should only take a few seconds to create then a further few seconds for the health checks to pass.
 
 Assuming all is well you should be shown the credentials to connect to it. Make a note of those as you will only be shown them once. You could now [connect to that](https://fly.io/docs/postgres/connecting/connecting-with-flyctl/) and create the database yourself. However I'll let Fly.io create that in a moment.
 
@@ -151,7 +151,7 @@ The app needs a [GitHub OAuth](https://docs.github.com/en/developers/apps/buildi
 
 The client ID will be shown on screen. Click the button to generate a new client secret to get that too.
 
-Now run _this_ commnd to tell Fly.io those values (of course using yours):
+Now run _this_ command to tell Fly.io those values (of course using yours):
 
 ```sh
 $ flyctl secrets set LIVE_BEATS_GITHUB_CLIENT_ID="swap-this-for-yours" LIVE_BEATS_GITHUB_CLIENT_SECRET="swap-this-for-yours"
@@ -291,7 +291,7 @@ Machine has been successfully cloned!
 
 You can confirm by running `flyctl status`. That should show _two_ machines (in my case, one in `lhr` and one in `sea`). If you run `flyctl volumes list` you should see the two volumes, and now both are attached to their respective VMs.
 
-I'll check that the Live Beats app has noticed that new machine. i'll SSH in to the cloest machine by running `flyctl ssh console`.
+I'll check that the Live Beats app has noticed that new machine. I'll SSH in to the closest machine by running `flyctl ssh console`.
 
 As Chris McCord demonstrates in [this video](https://www.youtube.com/watch?v=JrqBudJd2YM&ab_channel=ChrisMcCord) (skip to **5:30**) the app is using `libcluster`. You may have noticed that at the end of `/config/runtime.exs` in the original repo (it's different in this one):
 
@@ -344,9 +344,9 @@ v6      12345:12345             public          global  41m57s ago
 v4      1.2.3.4                 public (shared)
 ```
 
-Assuming you are using Cloudflare, you would need those DNS records to be grey-cloud (non-proxied). Else they would return the wrong IP (the IP of its proxy) and would fail the certificate validaation.
+Assuming you are using Cloudflare, you would need those DNS records to be grey-cloud (non-proxied). Else they would return the wrong IP (the IP of its proxy) and would fail the certificate validation.
 
-At this point requests to `www.your-domain.com` would go to Fly.io's network ... however it would not know what to do with them. Plus, it wouldn't have any SSL certifcate. You can sort out both of _those_ issues by running `flyctl certs add www.your-domain.com`, of course providing your domain in its place. You can check on it by running `flyctl certs list`. Assuming your DNS records are correct, it should have been able to validate you own that custom domain and so issue a certificate for it.
+At this point requests to `www.your-domain.com` would go to Fly.io's network ... however it would not know what to do with them. Plus, it wouldn't have any SSL certificate. You can sort out both of _those_ issues by running `flyctl certs add www.your-domain.com`, of course providing your domain in its place. You can check on it by running `flyctl certs list`. Assuming your DNS records are correct, it should have been able to validate you own that custom domain and so issue a certificate for it.
 
 However ...
 

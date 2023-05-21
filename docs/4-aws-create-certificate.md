@@ -44,7 +44,7 @@ As it says in ACM, its type should be `CNAME`. You can get the name and the targ
 
 Click "Save" to add that DNS record.
 
-Now switch back to the ACM console. It _usually_ validates a new domain within an hour. If not and your certificate still shows as pending, take a look at their [troubleshooting page](https://docs.aws.amazon.com/acm/latest/userguide/troubleshooting-DNS-validation.html).
+Now switch back to the ACM console. It _usually_ validates a new domain within an hour. If your certificate still shows as pending, take a look at their [troubleshooting page](https://docs.aws.amazon.com/acm/latest/userguide/troubleshooting-DNS-validation.html).
 
 You can carry on with this guide while you wait. At some point it should validate your domain. It will then show as being issued.
 

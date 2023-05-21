@@ -32,7 +32,7 @@ Then give the initial user a name. The default is _postgres_ which is fine.
 
 You can either let AWS generate a password for you, or enter your own. As with any password, make sure to keep it secret. Keep it out of your code. If it has to be used in sa connection string, make sure that is stored encrypted.
 
-Scroll down further and choose the instance configration. If you click on the dropdown menu you can see all of the available ones. The smallest size (the micro instance) has 2 vCPU and 1 GB of RAM. The "t" instances are bustable. That means they get a share of the CPU. They are substantially cheaper than the larger classes however support [fewer connections](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Limits.html). You can always edit the size later.
+Scroll down further and choose the instance configuration. If you click on the dropdown menu you can see all of the available ones. The smallest size (the micro instance) has 2 vCPU and 1 GB of RAM. The "t" instances get a share of the CPU. They are substantially cheaper than the larger classes however support [fewer connections](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Limits.html). You can always edit the size later.
 
 Next choose its initial disk size. The default is the smallest value: 20GB. Handily RDS can auto-scale the disk so you don't need to over-provision storage to begin with:
 
@@ -100,9 +100,9 @@ It should prompt you for your password. Enter that and you should be connected.
 
 If _not_ make sure:
 
-- Your database is set to allow public access
-- The endpoint, username and password are all correct
-- You are using the right port (my command did not specify one so it defaults to `5432`)
+- Your database is set to allow public access (for now)
+- The endpoint, username and password are correct
+- You are using the right port (my command did not specify one so it defaults to using `5432`)
 - Your IP (shown as that CIDR value in the security group rules) is correct
 
 You can list the databases using `\l`. There should be a default `postgres` database, a `rdsadmin` database, and probably some template ones too:
@@ -134,4 +134,4 @@ Type `\q` to quit and return to your terminal. The database is now ready for the
 
 You shouldn't need public access enabled and so you can edit that to be "no" if you like.
 
-Next, we know the Live Beats app uses values that need to be kept secret. Let's [create those secrets](/docs/6-aws-create-secrets.md).
+Next, I know the Live Beats app uses values that need to be kept secret. I'll [create those secrets](/docs/6-aws-create-secrets.md).

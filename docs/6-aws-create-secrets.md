@@ -47,7 +47,7 @@ You also need to provide two secret parameters for the GitHub OAuth app.
 
 If you _do_ already know what hostname your app is going to use (for example I'll use `www.your-domain.com`) you can go ahead and create a new GitHub OAuth app. You can create one from [https://github.com/settings/applications/new](https://github.com/settings/applications/new). Give it a name, set its homepage to `https://www.your-domain.com` and then its authorization callback URL to `https://www.your-domain.com/oauth/callbacks/github`. Click the button. You will be shown its client ID. Click the button below that to _Generate a new client secret_.
 
-If you don't (you plan on just serving the app over HTTP, using the load balancer's hostname) well at this point we don't know what that will be. So you would need to use `placeholder` (for now) as the value for both.
+**Note:** If you _don't_ (you plan on just serving the app over HTTP using the load balancer's hostname) well at _this_ point you don't know what that hostname will be. You would need to use `placeholder` (for now) as their value.
 
 Next, create one called `/staging/fly-live-beats/live-beats-github-client-id`. Its value should be the client ID, got from GitHub.
 
