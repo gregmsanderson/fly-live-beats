@@ -208,7 +208,7 @@ At this point I have two load balancers in both AWS regions, each distributing t
 
 One option could be to do it using DNS. The AWS DNS service, Route 53, supports [geo-location routing](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-policy-geo.html) and latency-based routing, deciding which record to return based on the user's location.
 
-In terms of pricing there is a small cost to add a hosted zone, and you then pay per million queries.
+In terms of pricing there is a small monthly cost to add a hosted zone, and you then pay about $0.70 per million geo queries.
 
 ## Global accelerator?
 
@@ -260,7 +260,7 @@ I'll edit that record so that `www.example.com` _now_ points at the DNS name sho
 
 It may take a minute for the DNS to propagate.
 
-If you now check the app, it should work. You should not get any WebSocket error _and_ HTTPS works (because the TCP connection is terminated at the AWS Edge but the TLS termination is handled by the load balancer):
+If you now check the app in your browser using `www.example.com`, it should work. You should not get any WebSocket error (as the hostname is what it expects) _and_ HTTPS works (because the TCP connection is terminated at the AWS Edge but the TLS termination is handled by the load balancer, which has your certificate in ACM):
 
 ![GA works](img/aws_ga_works.jpeg)
 
