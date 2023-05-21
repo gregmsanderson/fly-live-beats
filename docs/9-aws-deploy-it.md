@@ -187,13 +187,15 @@ The Live Beats app uses port `4000` by default and so specify that here.
 
 Scroll down a bit further and you are asked for the environment variable(s).
 
-We never want to store secrets like the `DATABASE_URL` in plain text. Recall earlier we [created secret values](/docs/6-aws-create-secrets.md) in AWS Systems Manager. Since that policy (created earlier in IAM) will allow it, ECS can fetch those values. You need to tell it the "Key" (which is the name the _app_ will see) and the "Value" (which is the name of the parameter in Parameter Store). Make sure to choose "ValueFrom" in that dropdown else it would use the path _as_ the value. As it explains in this guide to [using AWS Parameter store](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/secrets-envvar-ssm-paramstore.html) the reason you can simply use the name rather than its full "arn" here is because the secret is in the same _region_.
+Recall earlier that I [created the secrets](/docs/6-aws-create-secrets.md). Using the custom IAM policy (the one you created earlier) will allow ECS to fetch those values. You need to tell it the "Key" (that is the name the _app_ will see) and the "Value" (which is the name of the parameter AWS sees, in Parameter Store).
 
-This image shows one of the secrets:
+Make sure to choose "ValueFrom" in the dropdown for each secret else it would use the path _as_ the value. As it explains in this guide to [using AWS Parameter store](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/secrets-envvar-ssm-paramstore.html) the reason you can use the name (rather than its full "arn") is because the secret is stored in the same AWS region.
+
+The image below shows one of the secrets:
 
 ![ECS task secret](img/aws_systems_manager_secret_2.jpeg)
 
-You need to click the button to add more environment variables.
+Click the button to add the rest of the environment variables.
 
 First, the secrets. For each of _these_ make sure to choose `ValueFrom` in the dropdown and of course use whatever name _you_ gave them in the Parameter Store:
 
