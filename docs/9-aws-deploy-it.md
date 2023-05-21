@@ -280,21 +280,15 @@ To make sure the service itself is valid, for now set the number of tasks to run
 
 ![ECS service](img/aws_ecs_create_service_2.jpeg)
 
-While here you might like to take a look at the AWS docs regarding [Fargate networking](https://docs.aws.amazon.com/AmazonECS/latest/userguide/fargate-task-networking.html). I'll leave the default VPC (remember that is where the RDS database is). For simplicity I'll also stick with using the provided public subnets. As mentioned when setting up the RDS, the default VPC has three _public_ subnets. A _public_ subnet being one that is associated with a route table that _has_ a route to an Internet gateway. A _private_ subnet being one that is associated with a route table that does _not_ have a route to an internet gateway. Generally a load balancer will be in public subnet. You can choose whether the ECS cluster should be in a public or private subnet. Each have advantages.
+While here you might like to take a look at the AWS docs regarding [Fargate networking](https://docs.aws.amazon.com/AmazonECS/latest/userguide/fargate-task-networking.html). I'll use the default VPC (remember that is where the RDS database is). For simplicity I'll also stick with using the provided _public_ subnets. As mentioned when setting up the RDS, the default AWS VPC has three _public_ subnets. A _public_ subnet being one that is associated with a route table that _has_ a route to an Internet gateway. A _private_ subnet being one that is associated with a route table that does _not_ have a route to an internet gateway. Generally a load balancer will be in public subnet. You can choose whether the ECS cluster should be in a public or private subnet. However for a task on Fargate to be able to pull a container image, that task must have a route to the internet. A route to the internet is also required to fetch secrets (from Parameter Store). When using a public subnet, you can assign a public IP address to the task ENI. When using a private subnet, the subnet can have a NAT gateway attached. But adding a NAT gateway incurs [additional costs](https://aws.amazon.com/vpc/pricing/).
 
-> For a task on Fargate to pull a container image, the task must have a route to the internet. The following describes how you can verify that your task has a route to the internet. When using a public subnet, you can assign a public IP address to the task ENI. When using a private subnet, the subnet can have a NAT gateway attached.
-
-A route to the internet is required to fetch secrets (from Parameter Store).
-
-If you use a private subnet, adding a NAT gateway incurs [additional costs](https://aws.amazon.com/vpc/pricing/).
-
-However traffic between the instance and the load balancer also incurs a cost (data transfer using a private IP within the same region should be free).
+I've opted to put my ECS tasks in the _public_ subnet, avoiding the need for a NAT gateway (to get a route to the internet).
 
 Next, create a new security group (which is a virtual firewall), rather than use the default one. Give it a name for example `fly-live-beats-service-sg`.
 
-**Note:** When you also set up a new load balancer (in a moment, to allow traffic to be split over multiple containers), initially this will also be its security group. That will be changed later as it seems there is no option to do that here right now.
+**Note:** When you set up a new load balancer (in a moment, to allow traffic to be split over multiple containers), initially this will _also_ be set as its security group. That will be changed later, after creating the service. It seems there is no option to do that here.
 
-You want to allow inbound connections to the _container_ on the TCP port `4000`. Set the source as `0.0.0.0/0` if you want to allow access to it from any IP. You will be changing these rules later on.
+You want to allow inbound connections to the _container_ on the TCP port `4000`. For now you can set the source as anywhere `0.0.0.0/0`, assuming you want to allow access to it from any IP. Again, you will be changing these rules later.
 
 ![ECS service](img/aws_ecs_create_service_3.jpeg)
 
