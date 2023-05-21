@@ -346,15 +346,15 @@ v4      1.2.3.4                 public (shared)
 
 Assuming you are using Cloudflare, you would need those DNS records to be grey-cloud (non-proxied). Else they would return the wrong IP (the IP of its proxy) and would fail the certificate validation.
 
-At this point requests to `www.your-domain.com` would go to Fly.io's network ... however it would not know what to do with them. Plus, it wouldn't have any SSL certificate. You can sort out both of _those_ issues by running `flyctl certs add www.your-domain.com`, of course providing your domain in its place. You can check on it by running `flyctl certs list`. Assuming your DNS records are correct, it should have been able to validate you own that custom domain and so issue a certificate for it.
+At this point requests to `www.example.com` would go to Fly.io's network ... however it would not know what to do with them. Plus, it wouldn't have any SSL certificate. You can sort out both of _those_ issues by running `flyctl certs add www.example.com`, of course providing your domain in its place. You can check on it by running `flyctl certs list`. Assuming your DNS records are correct, it should have been able to validate you own that custom domain and so issue a certificate for it.
 
 However ...
 
-1. If you visit `www.your-domain.com` you would get a WebSocket error. Why? The Live Beats app needs to know its hostname. Recall that is done by setting the `PHX_HOST` environment variable. Make sure to update that in its `fly.toml` to `www.your-domain.com`.
+1. If you visit `www.example.com` you would get a WebSocket error. Why? The Live Beats app needs to know its hostname. Recall that is done by setting the `PHX_HOST` environment variable. Make sure to update that in its `fly.toml` to `www.example.com`.
 
-2. Signing in to the app would not work. Why? This app uses a GitHub OAuth app to sign in. It _also_ needs the app's hostname. If it's still set to use `https://your-app-name.fly.dev` that will need updating from [https://github.com/settings/applications](https://github.com/settings/applications) to use your `www.your-domain.com` instead.
+2. Signing in to the app would not work. Why? This app uses a GitHub OAuth app to sign in. It _also_ needs the app's hostname. If it's still set to use `https://your-app-name.fly.dev` that will need updating from [https://github.com/settings/applications](https://github.com/settings/applications) to use your `www.example.com` instead.
 
-Having made those changes, run `flyctl deploy`. You should then be able to open `www.your-domain.com` in your browser and sign in to the app.
+Having made those changes, run `flyctl deploy`. You should then be able to open `www.example.com` in your browser and sign in to the app.
 
 ## AWS?
 

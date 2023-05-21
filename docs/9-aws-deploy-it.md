@@ -215,7 +215,7 @@ Value: `/staging/fly-live-beats/live-beats-github-client-secret`
 You also need to set some plain text environment variables. For _these_ make sure to choose `Value` from that dropdown as they _don't_ need to be fetched from somewhere else. They _are_ the values:
 
 Key: `PHX_HOST`
-Value: This should be your own domain e.g `www.your-domain.com`. If for some reason you do not want to use one, use the load balancer's hostname e.g `your-name-elb.region.amazonaws.com`.
+Value: This should be your own domain e.g `www.example.com`. If for some reason you do not want to use one, use the load balancer's hostname e.g `your-name-elb.region.amazonaws.com`.
 
 Key: `AWS_ECS_CLUSTER_REGION`
 Value: The AWS region your cluster is in e.g `eu-west-2`.
@@ -471,11 +471,11 @@ If all is well, click the "View load balancer" button. Within that large "Detail
 
 ## Update domain DNS
 
-Assuming you are using your own domain, now point that (for example `www.your-domain.com`) at your load balancer.
+Assuming you are using your own domain, now point that (for example `www.example.com`) at your load balancer.
 
 In your DNS provider's records you will need to add _another_ `CNAME` record (alongside any AWS ACM verification record which also needs to be kept). This time its _name_ will be your chosen sub-domain (for example `www`) and its _value_ will be the hostname of the load balancer (for example `name-alb-12345.eu-west-2.elb.amazonaws.com`). If you are using Cloudflare, leave that record non-proxied (at least for now, until you confirm it works).
 
-If that worked you should _now_ be able to request your app using that sub-domain and using `https://` since the load balancer should terminate that TlS connection for you. For example try loading `https://www.your-domain.com` in your browser.
+If that worked you should _now_ be able to request your app using that sub-domain and using `https://` since the load balancer should terminate that TlS connection for you. For example try loading `https://www.example.com` in your browser.
 
 You should see the Live Beats app.
 

@@ -28,7 +28,7 @@ Unfortunately certificates in AWS ACM [are regional](https://docs.aws.amazon.com
 
 > Certificates in ACM are regional resources ... For certificates provided by ACM, this means you must revalidate each domain name in the certificate for each region. You cannot copy a certificate between regions.
 
-Ddo that first as it may take a while to be issued. In the new AWS region (e.g US West) search for "ACM" and click on "Certificate Manager". Request a new public certificate for e.g `www.your-domain.com`, just like before. Check to see what `CNAME` name/value you need to add to verify you own that domain, and then if they are different to before (they shouldn't be as it is the same hostname!) add _that_ record in your DNS provider's system (in my case that is Cloudflare).
+Ddo that first as it may take a while to be issued. In the new AWS region (e.g US West) search for "ACM" and click on "Certificate Manager". Request a new public certificate for e.g `www.example.com`, just like before. Check to see what `CNAME` name/value you need to add to verify you own that domain, and then if they are different to before (they shouldn't be as it is the same hostname!) add _that_ record in your DNS provider's system (in my case that is Cloudflare).
 
 That can then be verifying in the background. It should be ready by the time the load balancer needs it.
 
@@ -190,7 +190,7 @@ If you see _this_ in the service's "Logs" tab, it can't have been able to connec
 
 If all is well (it shows the service has reached a steady state, the number of targets behind the load balancer is `1` and there are no issues in the "Logs") you might like to then go ahead and repeat that, clicking "Update service" again, but this time increasing the number of desired tasks to `2`.
 
-Of course currently your actual custom domain (such as `www.your-domain.com`) is still pointed at the original ALB, in my case in `eu-west-2`. To see if the app in `us-west-2` is responding you would need to use its ALB's hostname. For example `app-name-alb-123456.us-west-2.elb.amazonaws.com`.
+Of course currently your actual custom domain (such as `www.example.com`) is still pointed at the original ALB, in my case in `eu-west-2`. To see if the app in `us-west-2` is responding you would need to use its ALB's hostname. For example `app-name-alb-123456.us-west-2.elb.amazonaws.com`.
 
 **Note:** As shown you _will_ get a WebSocket error (because `PXH_HOST` does not match that hostname) _and_ also an SSL error (because ALB does not support HTTPS without a custom domain, and you are not using that so the certificate does not match) but that's fine for now. Both will be solved when the custom domain is pointed at a global routing/load-balancing service:
 
@@ -252,9 +252,9 @@ You will see each accelerator has two IPv4 _and_ a DNS name. According [to the A
 
 I'll try using its DNS hostname.
 
-In my DNS `www.your-domain.com` is still pointed at the ALB in `eu-west-2` (I've then got that ALB hostname as a backup to switch the `CNAME` back to in case there is any issue with the accelerator).
+In my DNS `www.example.com` is still pointed at the ALB in `eu-west-2` (I've then got that ALB hostname as a backup to switch the `CNAME` back to in case there is any issue with the accelerator).
 
-I'll edit that record so that `www.your-domain.com` _now_ points at the DNS name shown for the Global Accelerator (for example `123456789..awsglobalaccelerator.com`).
+I'll edit that record so that `www.example.com` _now_ points at the DNS name shown for the Global Accelerator (for example `123456789..awsglobalaccelerator.com`).
 
 It may take a minute for the DNS to propagate.
 
@@ -264,7 +264,7 @@ If you now check the app, it should work. You should not get any WebSocket error
 
 It works! 🚀
 
-To check requests are being routed to the nearest location, I requested the URL using [https://tools.pingdom.com/](https://tools.pingdom.com/). So that I could see which request it was, I put in a made-up path which I could then easily look for in the logs e.g `https://www.your-domain.com/test-from-pingdom`.
+To check requests are being routed to the nearest location, I requested the URL using [https://tools.pingdom.com/](https://tools.pingdom.com/). So that I could see which request it was, I put in a made-up path which I could then easily look for in the logs e.g `https://www.example.com/test-from-pingdom`.
 
 Sure enough, when requested from the US West coast, the "logs" tab for the app running in `us-west-2` showed that request being handled _there_.
 

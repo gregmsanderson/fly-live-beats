@@ -8,7 +8,7 @@ All apps should be served over HTTPS. Some AWS services will provide you with HT
 
 In my case I already own a domain. Plus I already have DNS set up for it (I set up a free account on Cloudflare and manage its DNS records within its dashboard).
 
-Let's say I want to use the sub-domain `www.your-domain.com` for this Live Beats app.
+Let's say I want to use the sub-domain `www.example.com` for this Live Beats app.
 
 I _don't_ have a certificate in ACM for that. But I need a certificate in order to use HTTPS when it comes to creating an Application Load Balancer. So I'll request one.
 
@@ -18,7 +18,7 @@ Search for "ACM" in the console. Click "Request a certificate":
 
 The only type available is a public one. Great, that's what I want. Click "Next".
 
-Enter the domain name(s) it will be protecting. For example `www.your-domain.com`. You can click the button below that _if_ you want to use it for other sub-domains too:
+Enter the domain name(s) it will be protecting. For example `www.example.com`. You can click the button below that _if_ you want to use it for other sub-domains too:
 
 ![ACM domain](img/aws_acm_domain.jpeg)
 
