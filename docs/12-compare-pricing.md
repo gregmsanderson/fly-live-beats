@@ -16,19 +16,15 @@ VMs start at $0.0000008/s ($1.94/mo) and range up to $0.0003766/s ($976.25/mo).
 
 In my case I created two of the smallest "shared-cpu-1x" VMs and so the compute cost was $1.94/month \* 2 for the VMs.
 
-[https://fly.io/docs/about/pricing/#apps-v2-and-machines](https://fly.io/docs/about/pricing/#apps-v2-and-machines)
+**Pricing page:** [https://fly.io/docs/about/pricing/#apps-v2-and-machines](https://fly.io/docs/about/pricing/#apps-v2-and-machines)
 
 #### Load balancer
 
-Free.
-
-Fly.io provides a [global proxy](https://fly.io/docs/reference/services/) which automatically handles load balancing across your VMs.
+Free. Fly.io provides a [global proxy](https://fly.io/docs/reference/services/) which automatically handles load balancing across your VMs.
 
 #### Global routing
 
-Free.
-
-Fly.io provides each new app with a [dedicated anycast IPv6 and shared anycast IPv4](https://fly.io/docs/reference/services/).
+Free. Fly.io provides each new app with a [dedicated anycast IPv6 and shared anycast IPv4](https://fly.io/docs/reference/services/).
 
 #### Database
 
@@ -36,7 +32,7 @@ Since Fly.io does not provide a managed database service, a database app is pric
 
 In my case I created one of the smallest "shared-cpu-1x" VMs and so the compute cost of the database was $1.94/month for the VM.
 
-[https://fly.io/docs/about/pricing/#apps-v2-and-machines](https://fly.io/docs/about/pricing/#apps-v2-and-machines)
+**Pricing page:** [https://fly.io/docs/about/pricing/#apps-v2-and-machines](https://fly.io/docs/about/pricing/#apps-v2-and-machines)
 
 #### Persistent storage
 
@@ -44,25 +40,21 @@ For the compute, I ran two VMs. Each machine have a 1GB volume attached to each 
 
 For the database, I ran one VM. That machine had a 1GB volume attached to each so that cost $0.15/GB. In production you would use a HA database, doubling that cost.
 
-[https://fly.io/docs/about/pricing/#persistent-storage-volumes](https://fly.io/docs/about/pricing/#persistent-storage-volumes)
+**Pricing page:** [https://fly.io/docs/about/pricing/#persistent-storage-volumes](https://fly.io/docs/about/pricing/#persistent-storage-volumes)
 
 #### Bandwidth
 
 My app were run in North America and Europe. If I were to exceed the free monthly allowance (100 GB) the cost would be $0.02 per GB. Other regions are more expensive:
 
-[https://fly.io/docs/about/pricing/#network-prices](https://fly.io/docs/about/pricing/#network-prices)
+**Pricing page:** [https://fly.io/docs/about/pricing/#network-prices](https://fly.io/docs/about/pricing/#network-prices)
 
 #### Registry
 
-Free.
-
-Fly.io provides a shared, private registry to store your images without any additional configuration.
+Free. Fly.io provides a shared, private registry to store your images without any additional configuration.
 
 #### Logging
 
-Free.
-
-Fly.io provides a tail of the latest X log lines from their CLI or dashboard. However if you want to look further back you would need to ship them to an external service.
+Free. Fly.io provides a tail of the latest X log lines from their CLI or dashboard. However if you want to look further back you would need to ship them to an external service.
 
 #### Free tier/allowance
 
@@ -70,9 +62,7 @@ There is a free _allowance_ to let you run a small app each month. Mine fit into
 
 I ran two of the smallest machines (shared-cpu-1x, 256MB) for the app, and another single instance database. A total of 3 vms. I also used three 1GB volumes, for a total of 3GB.
 
-[https://fly.io/docs/about/pricing/#free-allowances](https://fly.io/docs/about/pricing/#free-allowances)
-
-Essentially [invoices under $5 are waived](https://community.fly.io/t/questions-on-100-billing-discount/11133/7) 🙂.
+**Pricing page:** [https://fly.io/docs/about/pricing/#free-allowances](https://fly.io/docs/about/pricing/#free-allowances)
 
 #### Support
 
@@ -100,9 +90,17 @@ I have been using [AWS Fargate](https://aws.amazon.com/fargate/).
 
 For Linux/x86 (which I'm using), Fargate costs $0.04656 per vCPU per hour and $0.00511 per GB per hour (that cost can be reduced by up to 70% using its spot pricing, however that requires your app to be interrupt-tolerant). The cost is calculated per second, with a one-minute minimum.
 
-To run the smallest possible container on ECS with 0.25 vCPU and 0.5 GB of RAM (unlike on Fly.io there is no option to use 256MB), for the vCPU it would cost ($0.04656 / 4) _ 730 and for the RAM it would cost ($0.00511 / 2) _ 730 = $8.4972 + $1.86515 = $10.36235 per month.
+What is the cost of running one of the smallest possible container on ECS (with 0.25 vCPU and 0.5 GB of RAM)?
 
-[https://aws.amazon.com/fargate/pricing/](https://aws.amazon.com/fargate/pricing/)
+For the vCPU, it would cost ($0.04656 / 4) \* 730 = $8.4972
+
+For the RAM it would cost ($0.00511 / 2) \* 730 = $1.86515
+
+So a total of $10.36235 per month.
+
+In this case, I'm running two (for the smallest cluster). So that would cost $10.36235 \* 2 = $20.7247.
+
+**Pricing page:** [https://aws.amazon.com/fargate/pricing/](https://aws.amazon.com/fargate/pricing/)
 
 #### Load balancer
 
@@ -116,7 +114,7 @@ This app will have minimal usage so 1 LCU will bee sufficient. That adds $0.0084
 
 So that is a minimum total of $19.3158 + $6.132 = $25.4478 to run _one_ Application Load Balancer for a month.
 
-[https://aws.amazon.com/elasticloadbalancing/pricing/?did=ap_card&trk=ap_card](https://aws.amazon.com/elasticloadbalancing/pricing/?did=ap_card&trk=ap_card)
+**Pricing page:** [https://aws.amazon.com/elasticloadbalancing/pricing/?did=ap_card&trk=ap_card](https://aws.amazon.com/elasticloadbalancing/pricing/?did=ap_card&trk=ap_card)
 
 #### Global routing
 
@@ -128,7 +126,7 @@ You _then_ pay a premium per gigabyte of data transferred over the network (in _
 
 If your app is only running in a single AWS region (particularly within America or Europe) you likely wouldn't need to use this.
 
-[https://aws.amazon.com/global-accelerator/pricing/?did=ap_card&trk=ap_card](https://aws.amazon.com/global-accelerator/pricing/?did=ap_card&trk=ap_card)
+**Pricing page:** [https://aws.amazon.com/global-accelerator/pricing/?did=ap_card&trk=ap_card](https://aws.amazon.com/global-accelerator/pricing/?did=ap_card&trk=ap_card)
 
 #### Database
 
@@ -140,7 +138,7 @@ In production you _would_ need HA and so you should look at the Multi-AZ deploym
 
 Storage costs $0.133 per GB per month. Again, for HA you would double that as your data would be stored twice. So $0.266 per GB per month.
 
-[https://aws.amazon.com/rds/postgresql/pricing/?pg=pr&loc=3&refid=ap_card](https://aws.amazon.com/rds/postgresql/pricing/?pg=pr&loc=3&refid=ap_card)
+**Pricing page:** [https://aws.amazon.com/rds/postgresql/pricing/?pg=pr&loc=3&refid=ap_card](https://aws.amazon.com/rds/postgresql/pricing/?pg=pr&loc=3&refid=ap_card)
 
 #### Persistent storage
 
@@ -148,7 +146,7 @@ I _would_ use [Elastic File System](https://aws.amazon.com/efs/).
 
 For this app I didn't attach any persistent storage. I used the ephemeral storage each of my containers came with. But for a fair comparison to Fly.io (where the data is persisted) the cost would have been a base of $0.33 per GB per month.
 
-[https://aws.amazon.com/efs/pricing/(https://aws.amazon.com/efs/pricing/](https://aws.amazon.com/efs/pricing/(https://aws.amazon.com/efs/pricing/)
+**Pricing page:** [https://aws.amazon.com/efs/pricing/(https://aws.amazon.com/efs/pricing/](https://aws.amazon.com/efs/pricing/(https://aws.amazon.com/efs/pricing/)
 
 #### Bandwidth
 
@@ -156,7 +154,7 @@ The pricing for bandwidth is slightly complicated in that transfers within the s
 
 Each service may have a different rate but usually you can consider the pricing based on EC2. The first 10TB transferred to the internet each month are billed at $0.09 per GB.
 
-[https://aws.amazon.com/ec2/pricing/on-demand/#Data_Transfer](https://aws.amazon.com/ec2/pricing/on-demand/#Data_Transfer)
+**Pricing page:** [https://aws.amazon.com/ec2/pricing/on-demand/#Data_Transfer](https://aws.amazon.com/ec2/pricing/on-demand/#Data_Transfer)
 
 #### Registry
 
@@ -164,7 +162,7 @@ I have been using its [Amazon Elastic Container Registry](https://aws.amazon.com
 
 You pay $0.10 per GB per month for data stored in a repository, and then $0.09 per GB for data transferred from a private repository (which you will probably be using). My images were only 50-100MB and so even if I had kept them the whole month, the cost would be barely $0.10.
 
-[https://aws.amazon.com/ecr/pricing/?did=ap_card&trk=ap_card](https://aws.amazon.com/ecr/pricing/?did=ap_card&trk=ap_card)
+**Pricing page:** [https://aws.amazon.com/ecr/pricing/?did=ap_card&trk=ap_card](https://aws.amazon.com/ecr/pricing/?did=ap_card&trk=ap_card)
 
 #### Logging
 
@@ -172,7 +170,7 @@ I have been using [Cloudwatch](https://aws.amazon.com/cloudwatch/)
 
 Log collection is $0.5985 per GB and storage is $0.0315 per GB. My app generates a small amount of log data and so this cost is minimal.
 
-[https://aws.amazon.com/cloudwatch/pricing/](https://aws.amazon.com/cloudwatch/pricing/)
+**Pricing page:** [https://aws.amazon.com/cloudwatch/pricing/](https://aws.amazon.com/cloudwatch/pricing/)
 
 #### Free tier
 
@@ -187,5 +185,13 @@ For example for RDS (their database service), _new_ AWS customers get 750 hours 
 Without any commitment you only have access to community support. There are forums such as [https://repost.aws/](https://repost.aws/) where you can find the answer to many questions.
 
 Premium support [starts at $29 a month](https://aws.amazon.com/premiumsupport/plans/).
+
+## AWS vs Fly.io
+
+The total cost of running this app on Fly.io is ... $0. Which is hard to believe. For that I can run 3 VMs with 3 1GB volumes. There is no cost for global routing, load balancing, or images.
+
+Excluding the free tiers, well running its 3 VMs (2 for the app, and 1 for the database) would cost ($1.94 \* 3) = $5.82 a month on Fly.io. That is cheaper than running a single container on ECS Fargate. The cost of running the _smallest_ container on ECS Fargate is $10.36235 a month. That does come with 512MB, compared to 256MB on Fly.io, however even if we halve the cost (not correct since the RAM is a smaller part of the cost, but still), that would _still_ be $10.36235/2 = $5.181175. That is the cost of running three VMs on Fly.io for the cost of running one on AWS.
+
+Yes, compute costs on AWS can be reduced. On ECS you _can_ use EC2 as the capacity provider, instead of Fargate. You _can_ use spot capacity on Fargate if your app is interrupt-tolerant. However then you have to manage the capacity or deal with making your app interrupt-tolerant.
 
 So ... [in conclusion](/docs/13-in-conclusion.md)
