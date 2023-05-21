@@ -1,12 +1,12 @@
 # Run it globally on AWS
 
-AWS is constructed around distinct geographic regions. That may be more suitable for some applications, such as those with strict compliance requirements about where its data can reside. I'm interested in seeing if/how I could replicate what I set up on Fly.io earlier. If you recall I had the database and initial compute set up in the UK, then added an additional vm on the west coast of the US.
+I'm interested in seeing if I could replicate what I set up on Fly.io earlier. If you recall I had the database and initial compute set up in the UK, then added an additional vm on the west coast of the US.
 
-The **TL;DR**: No. I did get the Live Beats app running in two separate regions and configured requests to load-balance between them. However an ECS cluster only exists in a single AWS region. In theory, the nodes in Europe could (via VPC peering) connect to ones in the US. However they don't _know_ about them. My current [clustering strategy](/docs/10-aws-phoenix-clustering.md) relies on the ECS cluster reporting the nodes within it. Service discovery/connect would need to be used. What namespace would that use though 🤔? That is a definite advantage that Fly.io has over AWS when it comes to running Phoenix LiveView: using clustering. Your app may not be.
+**TL;DR**: No. I _did_ get the Live Beats app running in two AWS regions _and_ load-balanced between them. Both worked and using VPC peering, shared a single database. _However_ an ECS cluster only exists in a single AWS region. In _theory_ the nodes in Europe could (via VPC peering) connect to ones in the US. However they don't _know_ about them. My current [clustering strategy](/docs/10-aws-phoenix-clustering.md) relies on the ECS cluster reporting the nodes within it. Service discovery would need to be used. What namespace would _that_ use though 🤔? That is a definite advantage that Fly.io has over AWS when it comes to running Phoenix LiveView: clustering.
 
 ## Which region?
 
-I'll change my region (from the top-right) to be _another_ one. I picked use US West (Oregon):
+AWS is constructed around distinct geographic regions. That may be more suitable for some applications, such as those with strict compliance requirements about where its data can reside. I'll see if I can my app running in US West (Oregon):
 
 ![AWS change region](img/aws_global_region_change.jpeg)
 
