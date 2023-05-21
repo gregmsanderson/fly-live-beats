@@ -172,9 +172,7 @@ AWS costs a lot more:
 
 The app is costing _roughly_ $2 a day to run on AWS.
 
-I opted for the smallest options from each service (for example running one or two ECS containers with 0.5 vCPU and a single RDS instance, a `db.t3.micro`).
-
-Be aware that costs will be substantially higher than this in production. You would need to run _more_ containers, _bigger_ containers (more vCPU and/or RAM), and at the very least a HA database (with two instances).
+I opted for the smallest options from each service (for example using the smallest ECS container and a single, smallest RDS instance). In production You would need to run _more_ containers, _bigger_ containers (more vCPU and/or RAM), and at the very least a HA database (with two instances).
 
 On AWS there are a _lot_ of billing items. It is worth checking each service in detail _and_ keeping a regular eye on your account (such as in their cost explorer, and with [billing alerts](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/monitor_estimated_charges_with_cloudwatch.html)) to avoid any unexpected surprises at the end of the month.
 
