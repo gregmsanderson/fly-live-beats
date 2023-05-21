@@ -1,16 +1,18 @@
 # Deploy to AWS
 
+If you are just experimenting and _don't_ want to use HTTPS _or_ are using an external proxy (such as Cloudflare) to provide the certificate, you could skip this page. In which case you would need to use port `80` in place of `443` throughout the rest of the guide and use the load balancer's hostname.
+
+In my case I want to do what I did on Fly.io: use HTTPS without needing to use Cloudflare's proxy (orange-cloud).
+
+_Some_ AWS services will provide you with HTTPS without needing any additional configuration. For example if you deploy to AWS Lambda, you can ask for a [function URL](https://docs.aws.amazon.com/lambda/latest/dg/lambda-urls.html) like `https://<url-id>.lambda-url.<region>.on.aws`. AWS App Runner provides a TLS endpoint.
+
+However when creating an [Application Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html), upon selecting `HTTPS/443` for its listener, you are asked to pick an _existing_ certificate. Verifying domain ownership to issue a new certificate can take up to an hour (assuming you are not using AWS Route 53 for your DNS) so I figured it's best to do that first so it can be verifying in the background 🙂.
+
 ## Create a certificate
 
-All apps should be served over HTTPS. Some AWS services will provide you with HTTPS without additional configuration. For example if you deploy to AWS Lambda, you can ask for a [function URL](https://docs.aws.amazon.com/lambda/latest/dg/lambda-urls.html) like `https://<url-id>.lambda-url.<region>.on.aws`. AWS App Runner provides a TLS endpoint. So does AWS Lightsail. But some won't. When creating an [Application Load Balancer](https://docs.aws.amazon.com/elasticloadbalancing/latest/application/introduction.html) you need to choose the port to use as its listener. If you want to use `443` (for HTTPS) you need to pick an _existing_ certificate. Verifying ownership to issue a new one can take up to an hour (when not using AWS Route 53 for its DNS) so I figured it's best to do that first so it can be verifying in the background 🙂.
+I'll assume you have a domain name already registered and have access to its DNS records.
 
-**Note:** If you are just experimenting, using a different service which does not need a load balancer, _don't_ want to use HTTPS, or are using an external proxy (such as Cloudflare's orange-cloud DNS records) to provide the certificate, you can of course skip over this. You would then need to use port `80` in place of `443` throughout the rest of the guide.
-
-In my case I already own a domain. Plus I already have DNS set up for it (I set up a free account on Cloudflare and manage its DNS records within its dashboard).
-
-Let's say I want to use the sub-domain `www.example.com` for this Live Beats app.
-
-I _don't_ have a certificate in ACM for that. But I need a certificate in order to use HTTPS when it comes to creating an Application Load Balancer. So I'll request one.
+Let's say I want to use the sub-domain `www.example.com` for this Live Beats app. I currently _don't_ have a certificate in ACM for it. But I need a certificate in order to use HTTPS when it comes to creating an Application Load Balancer. I'll request one.
 
 Search for "ACM" in the console. Click "Request a certificate":
 
