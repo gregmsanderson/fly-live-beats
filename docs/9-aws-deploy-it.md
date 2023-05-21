@@ -308,11 +308,13 @@ Next you are asked for the port/protocol for its listener. Pick `443` and `HTTPS
 
 Note from earlier that an [ALB does not come with a default certificate](https://stackoverflow.com/questions/65326652/why-is-it-not-possible-to-create-an-alb-with-https-listener-without-a-custom-dom) and so I [created one in ACM](/docs/4-aws-create-certificate.md) for that very reason. Hopefully that is verified by now and so is available to select from ACM here. By picking `443` you are _then_ asked to provide an already-made SSL certificate.
 
-Since this is a new load balancer, there is no existing target group. This will be a new one. We just need to give it a name. That's because ALBs can be re-used across services (which also reduces cost). For example you may use this same ALB for another ECS service. Or have it pointed at something else, such as a Lambda function, on a different path. The target group's name identifies _this_ particular usage of it:
+Since this is a new load balancer, there is no existing target group. This will be a new one. I just need to give it a name. That's because ALBs can be re-used across services (which also reduces cost). For example you may use this same ALB for another ECS service. Or have it pointed at something else, such as a Lambda function, on a different path. The target group's name identifies _this_ particular usage of it.
+
+**Note;** This image shows port `80` and `HTTP` but _you_ will be picking `443` and `HTTPS`:
 
 ![ALB](img/aws_ecs_create_service_4.jpeg)
 
-Like on Fly.io, for now I won't enable auto-scaling.
+Like on Fly.io, for now I won't enable auto-scaling. That can be toggled later.
 
 That's it! Click "Create".
 
