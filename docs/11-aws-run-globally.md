@@ -28,13 +28,13 @@ Unfortunately certificates in AWS ACM [are regional](https://docs.aws.amazon.com
 
 > Certificates in ACM are regional resources ... For certificates provided by ACM, this means you must revalidate each domain name in the certificate for each region. You cannot copy a certificate between regions.
 
-Ddo that first as it may take a while to be issued. In the new AWS region (e.g US West) search for "ACM" and click on "Certificate Manager". Request a new public certificate for e.g `www.example.com`, just like before. Check to see what `CNAME` name/value you need to add to verify you own that domain, and then if they are different to before (they shouldn't be as it is the same hostname!) add _that_ record in your DNS provider's system (in my case that is Cloudflare).
+So in each AWS region (e.g US West) you will need to visit its "Certificate Manager". Request a new public certificate for your domain e.g `www.example.com`. Check to see what `CNAME` name/value you need to add to verify you own that domain, and then _if_ they are different to before (they shouldn't be as it is the same hostname) add _that_ record in your DNS provider's system (in my case that is Cloudflare).
 
-That can then be verifying in the background. It should be ready by the time the load balancer needs it.
+That can then be verifying in the background. It should be issued by the time the load balancer needs it in _this_ region.
 
 ## VPC
 
-When accessing a resource in another AWS region, an additional complexity is introduced: VPCs and their associated networking. If you recall from the earlier guide, the simplest option was just to use the default VPC each AWS account comes with. That saves you from having to think too much about subnets, route tables, internet gateways ... and so on. Unfortunately for inter-region communication, you do need to think about VPCs.
+When accessing a resource in another AWS region, an additional complexity is introduced: VPCs. If you recall from the earlier guide, the simplest option was just to use the default VPC each AWS account comes with. That saves you from having to think too much about subnets, route tables, internet gateways ... and so on. Unfortunately for inter-region communication, you do need to think about VPCs.
 
 When you create resources (like EC2 instances), they are put in a VPC. If you want one of those resources (for example an ECS container) to communicate with a resource in a VPC in another AWS region (for example an RDS instance), you need to set up [VPC peering](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-peering.html).
 
