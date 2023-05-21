@@ -172,7 +172,7 @@ AWS costs a lot more:
 
 The app is costing _roughly_ $2 a day to run on AWS.
 
-I opted for the smallest options from each service (for example using the smallest ECS container and a single, smallest RDS instance). In production You would need to run _more_ containers, _bigger_ containers (more vCPU and/or RAM), and at the very least a HA database (with two instances).
+I generally opted for the smallest options from each service (for example using the smallest ECS container, and a single RDS instance). In production you would need to run _more_ containers, _bigger_ containers (more vCPU and/or RAM), and a HA database (with two instances).
 
 On AWS there are a _lot_ of billing items. It is worth checking each service in detail _and_ keeping a regular eye on your account (such as in their cost explorer, and with [billing alerts](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/monitor_estimated_charges_with_cloudwatch.html)) to avoid any unexpected surprises at the end of the month.
 
@@ -180,7 +180,7 @@ On AWS there are a _lot_ of billing items. It is worth checking each service in 
 
 Since it varies per region, I'm basing _my_ pricing on the `eu-west-2` region. AWS pricing [assumes 730 hours in a month](https://aws.amazon.com/calculator/calculator-assumptions/).
 
-f you are using an AWS account within an AWS Organization, access to your billing data _may_ be turned off. I believe it is turned off by default. If so, you might see a blank page/error. You would need to enable it for accounts within the organization from the management AWS account (the one which pays the bills). Then on the right-hand side you can select a date range, choose the granularity and filter by e.g service or region. I generated a daily graph for the month, showing each AWS service that incurred a cost. The larger bar on the left-hand side is the tax which of course accumulates over _all_ the services used and will defer depending where you are in the world.
+If you are using an AWS account within an AWS Organization, access to your billing data _may_ be turned off. I believe it is turned off by default. If so, you might see a blank page/error. You would need to enable it for accounts within the organization from the management AWS account (the one which pays the bills). Then on the right-hand side you can select a date range, choose the granularity and filter by e.g service or region. I generated a daily graph for the month, showing each AWS service that incurred a cost. The larger bar on the left-hand side is the tax which of course accumulates over _all_ the services used and will defer depending where you are in the world.
 
 Compute costs on AWS _can_ be reduced. On ECS you _can_ use EC2 as the capacity provider, instead of Fargate. You _can_ use spot capacity on Fargate if your app is interrupt-tolerant. However then you have to manage the capacity or deal with making your app interrupt-tolerant.
 
