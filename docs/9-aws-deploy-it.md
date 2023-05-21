@@ -475,13 +475,11 @@ In your DNS provider's records you will need to add _another_ `CNAME` record (al
 
 If that worked you should _now_ be able to request your app using that sub-domain and using `https://` since the load balancer should terminate that TlS connection for you. For example try loading `https://www.example.com` in your browser.
 
-You should see the Live Beats app.
+You should see the Live Beats app's sign in page.
 
-If there is a 504 error, again, check the targets behind it are healthy and rules in the security group allow it access. You can see which one from its "Security" tab. Click on its ID there to view its rules and make sure your IP is included for inbound access to the ALB (if it only allows access to certain ones, rather than `0.0.0.0/0`):
+If instead there is a 504 error, check your load balancer's status in the ECS console. Check the number of targets shown as healthy/unhealthy. If any are are shown as being unhealthy, make sure the load balancer's security group allows the load balancer access to the ECS containers on port `4000`. Also, check the service's "Logs" tab to see if that reveals any issues.
 
-![ALB](img/aws_alb_security_group.jpeg)
-
-**Note:** If you see an error in the top-right complaining the WebSocket can not connect that would likely be because the `PHX_HOST` environment variable does not match the hostname in the browser. Check the "Task definitions" and make sure your one has the correct value for it.
+**Note:** If you see an error in the top-right of the app's sign in page complaining the WebSocket can not connect _that_ would likely be because the `PHX_HOST` environment variable does not match the hostname used in the browser. Check the "Task definitions", click on your task definition, and make sure it has the correct value.
 
 ## Signing in to the live Beats app
 
