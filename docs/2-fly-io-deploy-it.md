@@ -1,6 +1,6 @@
 # Deploy to Fly.io
 
-**Important:** This repo contains the modified Live Beats app (for deploying it to AWS). Since on this page I _am_ deploying to Fly.io I'll _instead_ use the code from the [original Live Beats repo](https://github.com/fly-apps/live_beats).
+**Note:** This repo contains the _modified_ Live Beats app (ready for deploying to AWS). For deploying Live Beats on Fly.io I'll instead use the code from the [original Live Beats repo](https://github.com/fly-apps/live_beats).
 
 ## Create a Fly.io account
 
