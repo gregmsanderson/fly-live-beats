@@ -1,62 +1,54 @@
 # Pricing
 
-I deployed the same application to both Fly.io and AWS. I've generally used their smallest/cheapest options to see how they compare. As such, each service _can_ cost substantially more than this.
+I deployed the same application to both Fly.io and AWS. I've generally used their smallest/cheapest options to see how they compare. As such, each service _can_ cost substantially more.
+
+I've also excluded any _temporary_ free allowances (such as free trials or 12-month free allowances). If you visit https://aws.amazon.com/free/ and use the checkbox filters on the left you can see which AWS services have a trial, 12-months free (for new accounts) or a _permanent_ free allowance. Currently AWS Lambda is the only compute option with a permanent free allowance. Some (like RDS) do have 12-months. For example you can run one of the smallest RDS instances for 750 hours a month (so, a month) for free.
 
 ## Fly.io
 
-You start out on their Hobby Plan. That has no monthly commitment and you pay for the resources you use. In my case, that's currently $0. My app fits within the free monthly allowance 🙂:
+### Compute
 
-![Fly invoice](img/fly_invoice.jpeg)
-
-How much would their services cost if I were to exceed the free allowance?
-
-#### Compute
-
-VMs start at $0.0000008/s ($1.94/mo) and range up to $0.0003766/s ($976.25/mo).
-
-In my case I created two of the smallest "shared-cpu-1x" VMs and so the compute cost was $1.94/month \* 2 for the VMs.
+VMs start at $0.0000008/s ($1.94/mo) and range up to $0.0003766/s ($976.25/mo). For my app I used two of the smallest "shared-cpu-1x" VMs and so the compute cost would $1.94/month \* 2 for the VMs.
 
 **Pricing page:** [https://fly.io/docs/about/pricing/#apps-v2-and-machines](https://fly.io/docs/about/pricing/#apps-v2-and-machines)
 
-#### Load balancer
+### Load balancer
 
-Free. Fly.io provides a [global proxy](https://fly.io/docs/reference/services/) which automatically handles load balancing across your VMs.
+Free. Fly.io provides a [global proxy](https://fly.io/docs/reference/services/). That automatically handles load balancing across your VMs.
 
-#### Global routing
+### Global routing
 
-Free. Fly.io provides each new app with a [dedicated anycast IPv6 and shared anycast IPv4](https://fly.io/docs/reference/services/).
+Free. Fly.io provides each new app with a [dedicated anycast IPv6 and shared anycast IPv4](https://fly.io/docs/reference/services/). Their proxy is global.
 
-#### Database
+### Database
 
-Since Fly.io does not provide a managed database service, a database app is priced just like a regular app.
-
-In my case I created one of the smallest "shared-cpu-1x" VMs and so the compute cost of the database was $1.94/month for the VM.
+Since Fly.io does not provide a managed database service, a database app is priced just like a regular app. In my case I created one of the smallest "shared-cpu-1x" VMs and so the compute cost of the database was $1.94/month for the VM. In production you would use a HA database, doubling that cost.
 
 **Pricing page:** [https://fly.io/docs/about/pricing/#apps-v2-and-machines](https://fly.io/docs/about/pricing/#apps-v2-and-machines)
 
-#### Persistent storage
+### Persistent storage
 
-For the compute, I ran two VMs. Each machine have a 1GB volume attached to each so that cost $0.15/GB \* 2.
+For the compute, I ran two VMs. Each machine have a 1GB volume attached to each. So that would cost $0.15 per GB \* 2.
 
-For the database, I ran one VM. That machine had a 1GB volume attached to each so that cost $0.15/GB. In production you would use a HA database, doubling that cost.
+For the database, I ran one VM. That machine had a 1GB volume attached to each. So that would cost $0.15 per GB. In production you would use a HA database, doubling that cost.
 
 **Pricing page:** [https://fly.io/docs/about/pricing/#persistent-storage-volumes](https://fly.io/docs/about/pricing/#persistent-storage-volumes)
 
-#### Bandwidth
+### Bandwidth
 
-My app were run in North America and Europe. If I were to exceed the free monthly allowance (100 GB) the cost would be $0.02 per GB. Other regions are more expensive:
+I ran my app in North America `sea` and Europe `lhr` and so if I were to exceed the free monthly bandwidth allowance (100 GB), the cost would be $0.02 per GB. Other regions are more expensive:
 
 **Pricing page:** [https://fly.io/docs/about/pricing/#network-prices](https://fly.io/docs/about/pricing/#network-prices)
 
-#### Registry
+### Registry
 
 Free. Fly.io provides a shared, private registry to store your images without any additional configuration.
 
-#### Logging
+### Logging
 
-Free. Fly.io provides a tail of the latest X log lines from their CLI or dashboard. However if you want to look further back you would need to ship them to an external service.
+Free. Fly.io provides a tail of the latest X log lines from their CLI or dashboard. However if you want to look further back you would need to ship them to an external service, adding an extra cost.
 
-#### Free tier/allowance
+### Free tier/allowance?
 
 There is a free _allowance_ to let you run a small app each month. Mine fit into that.
 
@@ -64,7 +56,7 @@ I ran two of the smallest machines (shared-cpu-1x, 256MB) for the app, and anoth
 
 **Pricing page:** [https://fly.io/docs/about/pricing/#free-allowances](https://fly.io/docs/about/pricing/#free-allowances)
 
-#### Support
+### Support
 
 Without any commitment you only have access to community support. There is a busy [community forum](https://community.fly.io) where someone will usually be able to assist.
 
@@ -72,19 +64,7 @@ Plans that include support from Fly.io staff [start at $29 a month](https://fly.
 
 ## AWS
 
-If you are using an AWS account within an AWS Organization, access to billing data _may_ be turned off. I believe it is by default. If so, you might see a blank page/error. You would need to enable it for accounts within the organization from the management AWS account (the one which pays the bills).
-
-On the right-hand side you can select a date range, choose the granularity and filter by e.g service or region. I generated a daily graph for the month, showing each AWS service that incurred a cost. The larger bar on the left-hand side is the tax which of course accumulates over _all_ the services used and will defer depending where you are in the world.
-
-![AWS cost explorer](img/aws_cost_explorer_daily.jpeg)
-
-Like on Fly.io I opted for the smallest options from each service (for example running one or two ECS containers with 0.5 vCPU and a single RDS instance, a `db.t3.micro`). That costs _roughly_ $2 a day. Your costs will be substantially higher than this in production. You would need to run more containers, _bigger_ containers (more vCPU and/or RAM), and at the very least a HA database (with two instances). Most of the AWS pricing pages have examples of usage and how much that would cost. There are a _lot_ of billing items so it is worth checking each service in detail _and_ keeping a regular eye on your account's cost explorer to avoid any unexpected surprises at the end of the month.
-
-**Note:** Since it varies per region, I'm basing _my_ pricing on the `eu-west-2` region. AWS pricing [assumes 730 hours in a month](https://aws.amazon.com/calculator/calculator-assumptions/).
-
-How much would their services cost if I were to exceed the free allowance?
-
-#### Compute
+### Compute
 
 I have been using [AWS Fargate](https://aws.amazon.com/fargate/).
 
@@ -102,7 +82,7 @@ In this case, I'm running two (for the smallest cluster). So that would cost $10
 
 **Pricing page:** [https://aws.amazon.com/fargate/pricing/](https://aws.amazon.com/fargate/pricing/)
 
-#### Load balancer
+### Load balancer
 
 I have been using [Application Load Balancers](https://aws.amazon.com/elasticloadbalancing/application-load-balancer/).
 
@@ -116,7 +96,7 @@ So that is a minimum total of $19.3158 + $6.132 = $25.4478 to run _one_ Applicat
 
 **Pricing page:** [https://aws.amazon.com/elasticloadbalancing/pricing/?did=ap_card&trk=ap_card](https://aws.amazon.com/elasticloadbalancing/pricing/?did=ap_card&trk=ap_card)
 
-#### Global routing
+### Global routing
 
 I have been using [AWS Global Accelerator](https://aws.amazon.com/global-accelerator/)
 
@@ -128,7 +108,7 @@ If your app is only running in a single AWS region (particularly within America 
 
 **Pricing page:** [https://aws.amazon.com/global-accelerator/pricing/?did=ap_card&trk=ap_card](https://aws.amazon.com/global-accelerator/pricing/?did=ap_card&trk=ap_card)
 
-#### Database
+### Database
 
 I have been using [Amazon RDS for PostgreSQL](https://aws.amazon.com/rds/postgresql/).
 
@@ -140,7 +120,7 @@ Storage costs $0.133 per GB per month. Again, for HA you would double that as yo
 
 **Pricing page:** [https://aws.amazon.com/rds/postgresql/pricing/?pg=pr&loc=3&refid=ap_card](https://aws.amazon.com/rds/postgresql/pricing/?pg=pr&loc=3&refid=ap_card)
 
-#### Persistent storage
+### Persistent storage
 
 I _would_ use [Elastic File System](https://aws.amazon.com/efs/).
 
@@ -148,7 +128,7 @@ For this app I didn't attach any persistent storage. I used the ephemeral storag
 
 **Pricing page:** [https://aws.amazon.com/efs/pricing/(https://aws.amazon.com/efs/pricing/](https://aws.amazon.com/efs/pricing/(https://aws.amazon.com/efs/pricing/)
 
-#### Bandwidth
+### Bandwidth
 
 The pricing for bandwidth is slightly complicated in that transfers within the same region can either be free or $0.01/GB, there is a reduced cost for transfers between AWS regions (generally $0.02/GB), and then there is a higher cost for data sent out to the Internet.
 
@@ -156,7 +136,7 @@ Each service may have a different rate but usually you can consider the pricing 
 
 **Pricing page:** [https://aws.amazon.com/ec2/pricing/on-demand/#Data_Transfer](https://aws.amazon.com/ec2/pricing/on-demand/#Data_Transfer)
 
-#### Registry
+### Registry
 
 I have been using its [Amazon Elastic Container Registry](https://aws.amazon.com/ecr/).
 
@@ -164,7 +144,7 @@ You pay $0.10 per GB per month for data stored in a repository, and then $0.09 p
 
 **Pricing page:** [https://aws.amazon.com/ecr/pricing/?did=ap_card&trk=ap_card](https://aws.amazon.com/ecr/pricing/?did=ap_card&trk=ap_card)
 
-#### Logging
+### Logging
 
 I have been using [Cloudwatch](https://aws.amazon.com/cloudwatch/)
 
@@ -172,21 +152,31 @@ Log collection is $0.5985 per GB and storage is $0.0315 per GB. My app generates
 
 **Pricing page:** [https://aws.amazon.com/cloudwatch/pricing/](https://aws.amazon.com/cloudwatch/pricing/)
 
-#### Free tier
+### Free tier/allowance?
 
-AWS divides its free allowances between _free trials_, _12-months free_ and _always free_.
+AWS has _free trials_, _12-months free_ and _always free_. You might benefit from temporary free access however according to those filters, these services do not have a permanent free allowance.
 
-It's worth checking their [free tier page](https://aws.amazon.com/free/?all-free-tier) and use the filters on the left to see what you are entitled to.
-
-For example for RDS (their database service), _new_ AWS customers get 750 hours each month for free for 12 months for one of the smallest instances. That essentially makes it free (for the compute part, excluding any data transfer).
-
-#### Support
+### Support
 
 Without any commitment you only have access to community support. There are forums such as [https://repost.aws/](https://repost.aws/) where you can find the answer to many questions.
 
 Premium support [starts at $29 a month](https://aws.amazon.com/premiumsupport/plans/).
 
 ## AWS vs Fly.io
+
+You start out on their Hobby Plan. That has no monthly commitment and you pay for the resources you use. In my case, that's currently $0. My app fits within the free monthly allowance 🙂:
+
+![Fly invoice](img/fly_invoice.jpeg)
+
+AWS costs a lot more:
+
+![AWS cost explorer](img/aws_cost_explorer_daily.jpeg)
+
+Like on Fly.io I opted for the smallest options from each service (for example running one or two ECS containers with 0.5 vCPU and a single RDS instance, a `db.t3.micro`). That costs _roughly_ $2 a day. Your costs will be substantially higher than this in production. You would need to run more containers, _bigger_ containers (more vCPU and/or RAM), and at the very least a HA database (with two instances). Most of the AWS pricing pages have examples of usage and how much that would cost. There are a _lot_ of billing items so it is worth checking each service in detail _and_ keeping a regular eye on your account's cost explorer to avoid any unexpected surprises at the end of the month.
+
+**Note:** Since it varies per region, I'm basing _my_ pricing on the `eu-west-2` region. AWS pricing [assumes 730 hours in a month](https://aws.amazon.com/calculator/calculator-assumptions/).
+
+**Note:** If you are using an AWS account within an AWS Organization, access to billing data _may_ be turned off. I believe it is by default. If so, you might see a blank page/error. You would need to enable it for accounts within the organization from the management AWS account (the one which pays the bills). Then on the right-hand side you can select a date range, choose the granularity and filter by e.g service or region. I generated a daily graph for the month, showing each AWS service that incurred a cost. The larger bar on the left-hand side is the tax which of course accumulates over _all_ the services used and will defer depending where you are in the world.
 
 The total cost of running this app on Fly.io is ... $0. Which is hard to believe. For that I can run 3 VMs with 3 1GB volumes. There is no cost for global routing, load balancing, or images.
 
