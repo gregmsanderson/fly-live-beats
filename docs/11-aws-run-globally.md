@@ -38,25 +38,25 @@ When accessing a resource in another AWS region, an additional complexity is int
 
 When you create resources (like EC2 instances), they are put in a VPC. If you want one of those resources (for example an ECS container) to communicate with a resource in a VPC in another AWS region (for example an RDS instance), you need to set up [VPC peering](https://docs.aws.amazon.com/vpc/latest/userguide/vpc-peering.html).
 
-The problem is that _my_ default VPC in `eu-west-2` has a CIDR that overlaps the default VPC in `us-west-2`. Which means ... [I can't use VPC peering](https://docs.aws.amazon.com/vpc/latest/peering/vpc-peering-basics.html#vpc-peering-limitations):
+But ... my default VPC (in `eu-west-2`) has a CIDR that overlaps the default VPC in `us-west-2`. Which means ... [I can't use VPC peering](https://docs.aws.amazon.com/vpc/latest/peering/vpc-peering-basics.html#vpc-peering-limitations):
 
-> You cannot create a VPC peering connection between VPCs that have matching or overlapping IPv4 CIDR blocks.
+> You cannot create a VPC peering connection between VPCs that have matching or overlapping IPv4 CIDR blocks. You cannot create a VPC peering connection between VPCs that have matching or overlapping IPv6 CIDR blocks.
 
-> You cannot create a VPC peering connection between VPCs that have matching or overlapping IPv6 CIDR blocks.
+Oh. If I were to proceed on, well, I would face [this unfortunate issue](https://serverfault.com/questions/698797/connecting-two-aws-vpc-regions-of-the-same-cidr-range).
 
-If I were to proceed on, well, I would face [this unfortunate issue](https://serverfault.com/questions/698797/connecting-two-aws-vpc-regions-of-the-same-cidr-range).
-
-The good news: you can create a _new_ VPC, [for free](https://aws.amazon.com/vpc/faqs/)
+Good news: you can create a _new_ VPC, [for free](https://aws.amazon.com/vpc/faqs/)
 
 > There are no additional charges for creating and using the VPC itself
 
-The bad news: it does involve quite a few steps, both to create the VPC and then to peer with the one in your other AWS region.
+Bad news: it does involve quite a few steps, both to create the VPC and then to peer with the one in your other AWS region.
 
-I'll give it a try.
+I'll give it a try ...
 
-First, in `us-west-2` I'll create a new VPC with a new IPv4 CIDR block (that does not overlap the one used by `eu-west-2`).
+## New VPC
 
-I'm currently only using public subnets but by default it creates two public ones and two private ones.
+In `us-west-2` I'll visit the "VPC" console and create a new VPC. That will have a new IPv4 CIDR block that does _not_ overlap the one used by `eu-west-2`.
+
+I'm currently only using public subnets but by default a new VPC in this region creates two public ones and two private ones.
 
 ## VPC peering
 
@@ -70,11 +70,13 @@ That then shows as "Provisioning". It will move to "Active" in a few moments:
 
 ![VPC peering active](img/aws_vpc_peering_active.jpeg)
 
-The next problem is DNS. By default, DNS resolution of hostname to private IPs is disabled. That's a problem because I'm using the RDS hostname to connect to it. The app needs to be able to resolve that hostname to an IP. So that [needs enabling](https://docs.aws.amazon.com/vpc/latest/peering/modify-peering-connections.html.).
+The next problem: DNS.
+
+By default, DNS resolution of hostname to private IPs is disabled. That's a problem because I'm using the RDS hostname to connect to it. The app needs to be able to resolve that hostname to an IP. So that [needs enabling](https://docs.aws.amazon.com/vpc/latest/peering/modify-peering-connections.html.).
 
 Click the "Edit DNS settings" button and toggle the option to enabled.
 
-**Note:** You need to do the same process in _both- regions for them to \_both_ show as "Enabled":
+**Note:** You need to do the same process in _both_ AWS regions for them to _both_ show as "Enabled" (as shown below):
 
 ![DNS enabled](img/aws_vpc_dns_enabled.jpeg)
 
