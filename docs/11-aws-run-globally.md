@@ -6,17 +6,17 @@ I'm interested in seeing if I could replicate what I set up on Fly.io earlier. I
 
 ## Which region?
 
-AWS is constructed around distinct geographic regions. That may be more suitable for some applications, such as those with strict compliance requirements about where its data can reside. I'll see if I can my app running in US West (Oregon):
+AWS is constructed around distinct geographic regions. That may be more suitable for some applications, such as those with strict compliance requirements about where its data can reside. I'll add US West (Oregon):
 
 ![AWS change region](img/aws_global_region_change.jpeg)
 
 ## Costs
 
-There are additional costs to consider when running an app in multiple regions. The biggest will be the cost of replicating resources. For example adding a load balancer in each region. Each load balancer has an hourly cost in _addition_ to its usage costs (such as connections or data).
+There are additional costs to consider when running an app in multiple AWS regions. The biggest will be the cost of replicating resources. For example adding a load balancer in _each_ region. Each load balancer has a fixed hourly cost in _addition_ to its usage costs. Realistically that is going to be a monthly cost.
 
 Data transfer _between_ AWS regions is more expensive (for example having a compute service in region A communicate with a database in region B).
 
-You also have the costs incurred from using some form of AWS service to handle _global_ load-balancing. Whether that is AWS Route 53 or the AWS Global Accelerator.
+You also have to consider the costs incurred from using some form of AWS service to handle _global_ load-balancing. Possibly AWS Route 53 or the AWS Global Accelerator.
 
 ## Database
 
