@@ -10,7 +10,7 @@ You start out on their Hobby Plan. That has no monthly commitment and you pay fo
 
 How much would their services cost if I were to exceed the free allowance?
 
-### Compute
+#### Compute
 
 VMs start at $0.0000008/s ($1.94/mo) and range up to $0.0003766/s ($976.25/mo).
 
@@ -18,19 +18,19 @@ In my case I created two of the smallest "shared-cpu-1x" VMs and so the compute 
 
 [https://fly.io/docs/about/pricing/#apps-v2-and-machines](https://fly.io/docs/about/pricing/#apps-v2-and-machines)
 
-## Load balancer
+#### Load balancer
 
 Free.
 
 Fly.io provides a [global proxy](https://fly.io/docs/reference/services/) which automatically handles load balancing across your VMs.
 
-## Global routing
+#### Global routing
 
 Free.
 
 Fly.io provides each new app with a [dedicated anycast IPv6 and shared anycast IPv4](https://fly.io/docs/reference/services/).
 
-## Database
+#### Database
 
 Since Fly.io does not provide a managed database service, a database app is priced just like a regular app.
 
@@ -38,7 +38,7 @@ In my case I created one of the smallest "shared-cpu-1x" VMs and so the compute 
 
 [https://fly.io/docs/about/pricing/#apps-v2-and-machines](https://fly.io/docs/about/pricing/#apps-v2-and-machines)
 
-### Persistent storage
+#### Persistent storage
 
 For the compute, I ran two VMs. Each machine have a 1GB volume attached to each so that cost $0.15/GB \* 2.
 
@@ -46,27 +46,27 @@ For the database, I ran one VM. That machine had a 1GB volume attached to each s
 
 [https://fly.io/docs/about/pricing/#persistent-storage-volumes](https://fly.io/docs/about/pricing/#persistent-storage-volumes)
 
-### Bandwidth
+#### Bandwidth
 
 My app were run in North America and Europe. If I were to exceed the free monthly allowance (100 GB) the cost would be $0.02 per GB. Other regions are more expensive:
 
 [https://fly.io/docs/about/pricing/#network-prices](https://fly.io/docs/about/pricing/#network-prices)
 
-### Registry
+#### Registry
 
 Free.
 
 Fly.io provides a shared, private registry to store your images without any additional configuration.
 
-### Logging
+#### Logging
 
 Free.
 
 Fly.io provides a tail of the latest X log lines from their CLI or dashboard. However if you want to look further back you would need to ship them to an external service.
 
-### Free tier
+#### Free tier/allowance
 
-Technically there isn't a free _tier_ but there is a free _allowance_ to let you run a small app. Mine fit into that.
+There is a free _allowance_ to let you run a small app each month. Mine fit into that.
 
 I ran two of the smallest machines (shared-cpu-1x, 256MB) for the app, and another single instance database. A total of 3 vms. I also used three 1GB volumes, for a total of 3GB.
 
@@ -74,7 +74,7 @@ I ran two of the smallest machines (shared-cpu-1x, 256MB) for the app, and anoth
 
 Essentially [invoices under $5 are waived](https://community.fly.io/t/questions-on-100-billing-discount/11133/7) 🙂.
 
-### Support
+#### Support
 
 Without any commitment you only have access to community support. There is a busy [community forum](https://community.fly.io) where someone will usually be able to assist.
 
@@ -94,7 +94,7 @@ Like on Fly.io I opted for the smallest options from each service (for example r
 
 How much would their services cost if I were to exceed the free allowance?
 
-### Compute
+#### Compute
 
 I have been using [AWS Fargate](https://aws.amazon.com/fargate/).
 
@@ -104,7 +104,7 @@ To run the smallest possible container on ECS with 0.25 vCPU and 0.5 GB of RAM (
 
 [https://aws.amazon.com/fargate/pricing/](https://aws.amazon.com/fargate/pricing/)
 
-## Load balancer
+#### Load balancer
 
 I have been using [Application Load Balancers](https://aws.amazon.com/elasticloadbalancing/application-load-balancer/).
 
@@ -118,7 +118,7 @@ So that is a minimum total of $19.3158 + $6.132 = $25.4478 to run _one_ Applicat
 
 [https://aws.amazon.com/elasticloadbalancing/pricing/?did=ap_card&trk=ap_card](https://aws.amazon.com/elasticloadbalancing/pricing/?did=ap_card&trk=ap_card)
 
-## Global routing
+#### Global routing
 
 I have been using [AWS Global Accelerator](https://aws.amazon.com/global-accelerator/)
 
@@ -130,7 +130,7 @@ If your app is only running in a single AWS region (particularly within America 
 
 [https://aws.amazon.com/global-accelerator/pricing/?did=ap_card&trk=ap_card](https://aws.amazon.com/global-accelerator/pricing/?did=ap_card&trk=ap_card)
 
-## Database
+#### Database
 
 I have been using [Amazon RDS for PostgreSQL](https://aws.amazon.com/rds/postgresql/).
 
@@ -142,7 +142,7 @@ Storage costs $0.133 per GB per month. Again, for HA you would double that as yo
 
 [https://aws.amazon.com/rds/postgresql/pricing/?pg=pr&loc=3&refid=ap_card](https://aws.amazon.com/rds/postgresql/pricing/?pg=pr&loc=3&refid=ap_card)
 
-### Persistent storage
+#### Persistent storage
 
 I _would_ use [Elastic File System](https://aws.amazon.com/efs/).
 
@@ -150,7 +150,7 @@ For this app I didn't attach any persistent storage. I used the ephemeral storag
 
 [https://aws.amazon.com/efs/pricing/(https://aws.amazon.com/efs/pricing/](https://aws.amazon.com/efs/pricing/(https://aws.amazon.com/efs/pricing/)
 
-### Bandwidth
+#### Bandwidth
 
 The pricing for bandwidth is slightly complicated in that transfers within the same region can either be free or $0.01/GB, there is a reduced cost for transfers between AWS regions (generally $0.02/GB), and then there is a higher cost for data sent out to the Internet.
 
@@ -158,7 +158,7 @@ Each service may have a different rate but usually you can consider the pricing 
 
 [https://aws.amazon.com/ec2/pricing/on-demand/#Data_Transfer](https://aws.amazon.com/ec2/pricing/on-demand/#Data_Transfer)
 
-### Registry
+#### Registry
 
 I have been using its [Amazon Elastic Container Registry](https://aws.amazon.com/ecr/).
 
@@ -166,7 +166,7 @@ You pay $0.10 per GB per month for data stored in a repository, and then $0.09 p
 
 [https://aws.amazon.com/ecr/pricing/?did=ap_card&trk=ap_card](https://aws.amazon.com/ecr/pricing/?did=ap_card&trk=ap_card)
 
-### Logging
+#### Logging
 
 I have been using [Cloudwatch](https://aws.amazon.com/cloudwatch/)
 
@@ -174,7 +174,7 @@ Log collection is $0.5985 per GB and storage is $0.0315 per GB. My app generates
 
 [https://aws.amazon.com/cloudwatch/pricing/](https://aws.amazon.com/cloudwatch/pricing/)
 
-### Free tier
+#### Free tier
 
 AWS divides its free allowances between _free trials_, _12-months free_ and _always free_.
 
@@ -182,10 +182,10 @@ It's worth checking their [free tier page](https://aws.amazon.com/free/?all-free
 
 For example for RDS (their database service), _new_ AWS customers get 750 hours each month for free for 12 months for one of the smallest instances. That essentially makes it free (for the compute part, excluding any data transfer).
 
-### Support
+#### Support
 
 Without any commitment you only have access to community support. There are forums such as [https://repost.aws/](https://repost.aws/) where you can find the answer to many questions.
 
 Premium support [starts at $29 a month](https://aws.amazon.com/premiumsupport/plans/).
 
-So [in conclusion](/docs/13-in-conclusion.md) ...
+So ... [in conclusion](/docs/13-in-conclusion.md)
