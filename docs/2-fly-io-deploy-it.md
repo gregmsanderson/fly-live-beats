@@ -350,11 +350,11 @@ At this point requests to `www.your-domain.com` would go to Fly.io's network ...
 
 However ...
 
-1. You would get a WebSocket error. Why? The app needs to know its hostname. Recall that is done by setting the `PHX_HOST`. Make sure to update that in `fly.toml`.
+1. If you visit `www.your-domain.com` you would get a WebSocket error. Why? The Live Beats app needs to know its hostname. Recall that is done by setting the `PHX_HOST` environment variable. Make sure to update that in its `fly.toml` to `www.your-domain.com`.
 
-2. The sign in part would not work. Why? The app uses a GitHub OAuth app to sign in. It needs to know the app's hostname too. If it's set to use `https://your-app-name.fly.dev` that will need updating in the GitHub UI to use your custom domain instead.
+2. Signing in to the app would not work. Why? This app uses a GitHub OAuth app to sign in. It _also_ needs the app's hostname. If it's still set to use `https://your-app-name.fly.dev` that will need updating from [https://github.com/settings/applications](https://github.com/settings/applications) to use your `www.your-domain.com` instead.
 
-Having made those changes, run `flyctl deploy` and you should then be able to open that domain in your browser and have the response returned by your app.
+Having made those changes, run `flyctl deploy`. You should then be able to open `www.your-domain.com` in your browser and sign in to the app.
 
 ## AWS?
 
