@@ -1,6 +1,6 @@
 # AWS Elastic Container Service (ECS)
 
-Before creating the ECS service, it needs a level of access which it does not get by default. You need to make the IAM roles and policies _first_. Then they will be available to select. If not, you'll probably see something like this:
+**Note::** If you want to use secrets (which I do) and/or wants to SSH in to a container (which I also do) the ECS task needs access which it does _not_ get by default. You need to make these IAM roles and policies first. They will then be available to select later on. If not, you'll probably see something like this:
 
 ![ECS failed](img/aws_ecs_service_failed.jpeg)
 
@@ -131,7 +131,7 @@ Click the blue "Create role" button and that should be created in a few seconds.
 
 ## ECS cluster
 
-Now there is an image to deploy (in ECR), a database for the app to connect to (in RDS) and secrets for it to access (in Parameter Store, the app can be run. That needs a container, which is run in an ECS cluster.
+Now there is an image to deploy (in ECR), a database for the app to connect to (in RDS) and secrets for it to access (in Parameter Store) the app can be run. That needs a container, which is run in an ECS cluster.
 
 Search for "ECS" and click on the link that appears:
 
