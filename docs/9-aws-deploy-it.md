@@ -1,6 +1,6 @@
 # AWS Elastic Container Service (ECS)
 
-**Note:** If you want to use secrets (which I do) and/or wants to SSH in to a container (which I also do) the ECS task needs access which it does _not_ get by default. You need to make these IAM roles and policies first. They will then be available to select later on. If not, you'll probably see something like this:
+**Note:** If you want to use secrets (which I do) and/or want to get shell access to a container (which I also do), you need to make these IAM roles and policies first. They will then be available to select later on, when creating the task. If not, you'll probably see something like this:
 
 ![ECS failed](img/aws_ecs_service_failed.jpeg)
 
