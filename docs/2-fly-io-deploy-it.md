@@ -274,7 +274,7 @@ app     12345           1       lhr     started 1 total, 1 passing      2023-05-
 
 I'll try adding more in different regions to see if they are able to communicate. It's recommended to run at _least_ two in production anyway.
 
-From this [list of regions](https://fly.io/docs/reference/regions/) I will add the a region in the US (`sea`). Normally you could run e.g `flyctl regions add sea` to change the regions the app can run in. However this Live Beats app uses a [volume](https://fly.io/docs/reference/volumes/). Volumes are local, persistent storage for machines. You need to [run a volume per machine](https://fly.io/docs/reference/volumes/). Rather than manually make that volume we can [clone the machine](https://fly.io/docs/apps/scale-count/#scale-up-with-fly-machine-clone) and Fly.io will do that for me 🙂.
+From this [list of regions](https://fly.io/docs/reference/regions/) I will add a region in the US (`sea`). Normally you could run e.g `flyctl regions add sea` to change the regions the app can run in. However this Live Beats app uses a [volume](https://fly.io/docs/reference/volumes/). Volumes are local, persistent storage for machines. You need to [run a volume per machine](https://fly.io/docs/reference/volumes/). Rather than manually make that volume we can [clone the machine](https://fly.io/docs/apps/scale-count/#scale-up-with-fly-machine-clone) and Fly.io will do that for me 🙂.
 
 You should already have its ID from running `flyctl status` so clone that:
 

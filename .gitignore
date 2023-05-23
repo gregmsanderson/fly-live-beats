@@ -34,3 +34,6 @@ npm-debug.log
 
 # Apple files
 .DS_Store
+
+# temp docs
+docs/temp
